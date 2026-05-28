@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>HCP Golf Pro</title>
 
 <link rel="manifest" href="manifest.json">
@@ -18,76 +19,48 @@ body {
     padding: 15px;
 }
 
-h1 {
-    color: #1B5E20;
-}
-
-.card {
-    background: white;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-}
-
 button {
     width: 100%;
     padding: 10px;
-    margin-top: 5px;
-    font-size: 16px;
+    margin-top: 10px;
     background: #1B5E20;
     color: white;
     border: none;
-    border-radius: 6px;
 }
 
 input, textarea {
     width: 100%;
     padding: 10px;
-    margin-top: 5px;
-    font-size: 16px;
+    margin-top: 10px;
 }
 
 .big {
-    font-size: 40px;
+    font-size: 30px;
     font-weight: bold;
-    color: #1B5E20;
 }
 </style>
 </head>
 
 <body>
 
-<h1>⛳ HCP Golf Pro</h1>
+<h2>⛳ HCP Golf Pro</h2>
 
-<div class="card">
-    <div>HCP ATTUALE</div>
-    <div id="hcp" class="big">0</div>
+<div>
+    HCP: <span id="hcp" class="big">0</span>
 </div>
 
-<div class="card">
-    <input type="number" id="stb" placeholder="Inserisci STB">
-    <button onclick="aggiungi()">➕ Aggiungi gara</button>
-</div>
+<input type="number" id="stb" placeholder="STB">
+<button onclick="aggiungi()">Aggiungi gara</button>
 
-<div class="card">
-    <textarea id="importText" placeholder="Incolla risultati FIG"></textarea>
-    <button onclick="importa()">📥 Importa risultati</button>
-</div>
+<textarea id="importText" placeholder="Incolla risultati"></textarea>
+<button onclick="importa()">Importa</button>
 
-<div class="card">
-    <input type="number" id="simulaStb" placeholder="Simula STB">
-    <button onclick="simula()">🔮 Simula HCP</button>
-    <div id="simulaOutput"></div>
-</div>
+<input type="number" id="simulaStb" placeholder="Simula STB">
+<button onclick="simula()">Simula</button>
 
-<div class="card">
-    <canvas id="grafico"></canvas>
-</div>
+<div id="simulaOutput"></div>
 
-<div class="card">
-    <strong>Storico gare</strong>
-    <div id="storico"></div>
-</div>
+<canvas id="grafico"></canvas>
 
 <script>
 
@@ -97,100 +70,67 @@ function salva() {
     localStorage.setItem("hcp", JSON.stringify(data))
 }
 
-function calcolaHcp(lista) {
-    if (lista.length < 8) return 0
-    let sorted = [...lista].sort((a,b)=>a-b)
-    return sorted.slice(0,8).reduce((a,b)=>a+b,0)/8
+function hcpCalc(arr){
+    if(arr.length<8) return 0
+    return arr.sort((a,b)=>a-b).slice(0,8).reduce((a,b)=>a+b,0)/8
 }
 
-function aggiungi() {
+function aggiungi(){
     let stb = parseInt(document.getElementById("stb").value)
-    if (!stb) return
-
-    if (data.length >= 20) data.shift()
-    data.push(36 - stb)
-
+    if(!stb) return
+    if(data.length>=20) data.shift()
+    data.push(36-stb)
     salva()
     aggiorna()
 }
 
-function importa() {
-    let text = document.getElementById("importText").value
-    let numeri = text.match(/\b\d{2}\b/g)
+function importa(){
+    let txt=document.getElementById("importText").value
+    let nums = txt.match(/\d{2}/g)
+    if(!nums) return
 
-    if (!numeri) return
-
-    numeri.forEach(n => {
-        if (data.length >= 20) data.shift()
-        data.push(36 - parseInt(n))
+    nums.forEach(n=>{
+        if(data.length>=20) data.shift()
+        data.push(36-parseInt(n))
     })
 
     salva()
     aggiorna()
 }
 
-function simula() {
-    let stb = parseInt(document.getElementById("simulaStb").value)
-    if (!stb) return
+function simula(){
+    let stb=parseInt(document.getElementById("simulaStb").value)
+    if(!stb) return
 
-    let copia = [...data]
+    let copy=[...data]
+    if(copy.length>=20) copy.shift()
+    copy.push(36-stb)
 
-    if (copia.length >= 20) copia.shift()
-    copia.push(36 - stb)
-
-    let attuale = calcolaHcp(data)
-    let nuovo = calcolaHcp(copia)
-
-    let stato = nuovo < attuale ? "🟢 SCENDI" : "🔴 SALI"
-
-    document.getElementById("simulaOutput").innerHTML =
-        `Nuovo HCP: ${nuovo.toFixed(2)}<br>${stato}`
+    let res = hcpCalc(copy)
+    document.getElementById("simulaOutput").innerText="Nuovo HCP: "+res.toFixed(2)
 }
 
-function aggiorna() {
-    let hcp = calcolaHcp(data)
-    document.getElementById("hcp").innerText = hcp.toFixed(2)
+function aggiorna(){
+    let val = hcpCalc(data)
+    document.getElementById("hcp").innerText=val.toFixed(2)
 
-    let sorted = [...data].sort((a,b)=>a-b)
-    let top8 = sorted.slice(0,8)
+    let ctx=document.getElementById("grafico")
 
-    let html = ""
-    data.forEach(d => {
-        html += `${d.toFixed(2)} ${top8.includes(d) ? "⭐" : ""}<br>`
-    })
+    let andamento=data.map((_,i)=>hcpCalc(data.slice(0,i+1)))
 
-    document.getElementById("storico").innerHTML = html
-    disegnaGrafico()
-}
+    if(window.chart) window.chart.destroy()
 
-function disegnaGrafico() {
-    let ctx = document.getElementById("grafico")
-
-    let andamento = data.map((_,i)=>
-        calcolaHcp(data.slice(0,i+1))
-    )
-
-    if (window.chart) window.chart.destroy()
-
-    window.chart = new Chart(ctx,{
+    window.chart=new Chart(ctx,{
         type:'line',
         data:{
             labels: andamento.map((_,i)=>i+1),
-            datasets:[{
-                data: andamento,
-                borderColor:'green',
-                tension:0.2
-            }]
-        },
-        options:{
-            plugins:{legend:{display:false}}
+            datasets:[{data:andamento,borderColor:'green'}]
         }
     })
 }
 
 aggiorna()
 
-// SERVICE WORKER
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
 }
