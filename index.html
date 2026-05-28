@@ -7,145 +7,236 @@
 
 <title>HCP Golf Pro</title>
 
-<!-- ✅ SCRIPT CORRETTO -->
-<script src="https://cdn.jsdelivr.net/npm/chart.jstyle>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
 body {
-    font-family: Arial;
-    padding: 15px;
-    background: #f5f5f5;
+    font-family: -apple-system, Arial;
+    background:#e8f5e9;
+    margin:0;
+    padding:12px;
 }
+
 h2 {
-    color: #1B5E20;
+    text-align:center;
+    color:#1B5E20;
 }
+
+.container {
+    background:white;
+    padding:15px;
+    margin-bottom:12px;
+    border-radius:16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.grid {
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap:6px;
+}
+
+input {
+    width:100%;
+    padding:12px;
+    text-align:center;
+    border:1px solid #ddd;
+    border-radius:8px;
+    font-size:16px;
+}
+
+input:focus {
+    border-color:#1B5E20;
+    outline:none;
+}
+
 button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    background: #1B5E20;
-    color: white;
-    border: none;
-    font-size: 16px;
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background: linear-gradient(45deg,#1B5E20,#43A047);
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
 }
-input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-}
+
 .big {
-    font-size: 30px;
-    font-weight: bold;
+    font-size:48px;
+    font-weight:bold;
+    text-align:center;
+    color:#1B5E20;
+}
+
+.stat {
+    text-align:center;
+    font-size:18px;
+    margin-top:5px;
+}
+
+.green {color:#2E7D32;}
+.red {color:#C62828;}
+
+.highlight {
+    border:2px solid gold !important;
+}
+
+canvas {
+    margin-top:10px;
 }
 </style>
-
 </head>
 
 <body>
 
 <h2>⛳ HCP Golf Pro</h2>
 
-<div>
-    HCP: <span id="hcp" class="big">0</span>
+<div class="container">
+    <label>HCP Attuale</label>
+    <input id="hcpBase" type="number" step="0.1">
 </div>
 
-<input id="stb" type="number" placeholder="Inserisci STB">
-<button id="btnAdd">Aggiungi gara</button>
+<div class="container">
+    <div class="grid" id="grid"></div>
+</div>
 
-<textarea id="importText" placeholder="Incolla risultati FIG"></textarea>
-<button id="btnImport">Importa risultati</button>
+<div class="container">
+    <div class="big" id="hcp">0</div>
+    <div class="stat" id="stato"></div>
+</div>
 
-<input id="simulaStb" type="number" placeholder="Simula STB">
-<button id="btnSimula">Simula</button>
+<div class="container">
+    <input id="simStb" type="number" placeholder="Simula STB">
+    <button id="btnSimula">Simula gara</button>
+    <div class="stat" id="simRes"></div>
+</div>
 
-<div id="simulaOutput"></div>
-
-<canvas id="grafico" style="margin-top:20px;"></canvas>
+<div class="container">
+    <canvas id="grafico"></canvas>
+</div>
 
 <script>
 
-/* ======================
-   DATI
-====================== */
-let data = JSON.parse(localStorage.getItem("hcp")) || []
-
-function salva() {
-    localStorage.setItem("hcp", JSON.stringify(data))
+// ===== CREAZIONE 20 CASELLE =====
+const grid = document.getElementById("grid")
+for(let i=0;i<20;i++){
+    let input = document.createElement("input")
+    input.type="number"
+    input.placeholder = i+1
+    input.id="g"+i
+    grid.appendChild(input)
 }
 
-function calcolaHcp(lista) {
-    if (lista.length < 8) return 0
-    let sorted = [...lista].sort((a,b)=>a-b)
-    return sorted.slice(0,8).reduce((a,b)=>a+b,0)/8
+// ===== DATI =====
+let data = JSON.parse(localStorage.getItem("stb")) || []
+let hcpBase = parseFloat(localStorage.getItem("hcpBase")) || 0
+
+document.getElementById("hcpBase").value = hcpBase
+
+// ===== SALVA =====
+function save(){
+    localStorage.setItem("stb", JSON.stringify(data))
+    localStorage.setItem("hcpBase", hcpBase)
 }
 
-function aggiorna() {
+// ===== PRENDI DATI =====
+function getData(){
+    let arr = []
+    for(let i=0;i<20;i++){
+        let v=document.getElementById("g"+i).value
+        if(v) arr.push(36 - parseFloat(v))
+    }
+    return arr
+}
 
-    document.getElementById("hcp").innerText =
-        calcolaHcp(data).toFixed(2)
+// ===== CALCOLO =====
+function calcHCP(list){
+    if(list.length<8) return hcpBase
+    let sorted=[...list].sort((a,b)=>a-b)
+    let top8=sorted.slice(0,8)
+    return top8.reduce((a,b)=>a+b,0)/8
+}
 
-    let andamento = data.map((_,i)=> 
-        calcolaHcp(data.slice(0,i+1))
-    )
+// ===== UPDATE =====
+function aggiorna(){
 
-    let canvas = document.getElementById("grafico")
+    hcpBase = parseFloat(document.getElementById("hcpBase").value) || 0
+    let list = getData()
 
-    if (window.chart) window.chart.destroy()
+    let hcp = calcHCP(list)
 
-    window.chart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels: andamento.map((_,i)=> i+1),
-            datasets: [{
+    document.getElementById("hcp").innerText = hcp.toFixed(2)
+
+    let diff = hcp - hcpBase
+    let stato = diff < 0 ? "🟢 SCENDI" : "🔴 SALI"
+
+    document.getElementById("stato").innerHTML = stato
+
+    // highlight top 8
+    let sorted=[...list].sort((a,b)=>a-b)
+    let top8=sorted.slice(0,8)
+
+    for(let i=0;i<20;i++){
+        let val=document.getElementById("g"+i).value
+        let el=document.getElementById("g"+i)
+
+        if(val && top8.includes(36-val)){
+            el.classList.add("highlight")
+        } else {
+            el.classList.remove("highlight")
+        }
+    }
+
+    // grafico
+    let andamento=[]
+    for(let i=1;i<=list.length;i++){
+        andamento.push(calcHCP(list.slice(0,i)))
+    }
+
+    if(window.chart) window.chart.destroy()
+
+    window.chart = new Chart(document.getElementById("grafico"),{
+        type:'line',
+        data:{
+            labels: andamento.map((_,i)=>i+1),
+            datasets:[{
                 data: andamento,
-                borderColor: 'green',
-                fill: false
+                borderColor:'green',
+                tension:0.3
             }]
+        },
+        options:{
+            plugins:{legend:{display:false}}
         }
     })
+
+    save()
 }
 
-function aggiungi() {
-    let stb = parseInt(document.getElementById("stb").value)
-    if (!stb) return
+// ===== SIMULAZIONE =====
+document.getElementById("btnSimula").addEventListener("click", function(){
 
-    if (data.length >= 20) data.shift()
+    let list=getData()
+    let stb=parseInt(document.getElementById("simStb").value)
 
-    data.push(36 - stb)
+    if(!stb) return
 
-    salva()
-    aggiorna()
-}
+    let copy=[...list]
+    if(copy.length>=20) copy.shift()
+    copy.push(36-stb)
 
-function importa() {
-    let text = document.getElementById("importText").value
-    let numeri = text.match(/\d{2}/g)
-    if (!numeri) return
+    let nuovo=calcHCP(copy)
+    let diff=nuovo-hcpBase
 
-    numeri.forEach(n => {
-        if (data.length >= 20) data.shift()
-        data.push(36 - parseInt(n))
-    })
+    let stato = diff<0 ? "🟢 SCENDI" : "🔴 SALI"
 
-    salva()
-    aggiorna()
-}
+    document.getElementById("simRes").innerHTML =
+        nuovo.toFixed(2)+" · "+stato
+})
 
-function simula() {
-    let stb = parseInt(document.getElementById("simulaStb").value)
-    if (!stb) return
-
-    let copia = [...data]
-
-    if (copia.length >= 20) copia.shift()
-    copia.push(36 - stb)
-
-    document.getElementById("simulaOutput").innerText =
-        "Nuovo HCP: " + calcolaHcp(copia).toFixed(2)
-}
-
-/* ✅ EVENT LISTENER (più sicuri dei onclick) */
-document.getElementById("btnAdd").addEventListener("click", aggiungi)
-document.getElementById("btnImport").addEventListener("click", importa)
-document.getElementById("btnSimula").addEventListener("click", simula)
+// aggiorna live
+document.addEventListener("input", aggiorna)
 
 aggiorna()
 
