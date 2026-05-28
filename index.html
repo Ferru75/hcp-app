@@ -1,293 +1,46 @@
 
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HCP PRO</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body {
-    font-family: Arial;
-    background:#e8f5e9;
-    margin:0;
-    padding:12px;
-}
-
-h2 { text-align:center; color:#1B5E20; }
-
-.container {
-    background:white;
-    padding:15px;
-    margin-bottom:12px;
-    border-radius:16px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-.grid {
-    display:grid;
-    grid-template-columns: repeat(5,1fr);
-    gap:6px;
-}
-
-input {
-    width:100%;
-    padding:12px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    text-align:center;
-}
-
-button {
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    background:linear-gradient(45deg,#1B5E20,#43A047);
-    color:white;
-    border:none;
-    border-radius:10px;
-    font-weight:bold;
-}
-
-.big {
-    font-size:42px;
-    text-align:center;
-    font-weight:bold;
-    color:#1B5E20;
-}
-
-.highlight {
-    border:2px solid gold !important;
-}
-
-.stat { text-align:center; margin-top:8px; }
-
-.hidden { display:none; }
-</style>
-</head>
-
-<body>
-
-<!-- LOGIN -->
-<div id="loginBox" class="container">
-    <h2>Login</h2>
-    <input id="user" placeholder="Nome utente">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Accedi</button>
-    <button onclick="register()">Crea profilo</button>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden">
-
-<h2>⛳ HCP PRO</h2>
-
-<div class="container">
-    <button onclick="logout()">Logout</button>
-</div>
-
-<div class="container">
-    <b>Inserisci gli ultimi SD</b>
-    <div class="grid" id="grid"></div>
-</div>
-
-<div class="container">
-    <div class="stat">IL TUO HCP</div>
-    <div class="big" id="hcp">--</div>
-</div>
-
-<div class="container">
-    <input id="sim" type="number" placeholder="Inserisci STB (es. 36)">
-    <button onclick="simula()">Inserisci il tuo prossimo STB e Simula</button>
-    <div class="stat" id="simOut"></div>
-</div>
-
-<div class="container">
-    <canvas id="grafico"></canvas>
-</div>
-
-</div>
-
-<script>
-
-let currentUser = null
-
-// ===== LOGIN =====
-function register(){
-    let u=user.value
-    let p=pass.value
-    if(!u||!p) return alert("Inserisci dati")
-    localStorage.setItem("user_"+u,p)
-    alert("Profilo creato")
-}
-
-function login(){
-    let u=user.value
-    let p=pass.value
-    if(localStorage.getItem("user_"+u)===p){
-        currentUser=u
-        startApp()
-    } else alert("Credenziali errate")
-}
-
-function logout(){ location.reload() }
-
-function startApp(){
-    loginBox.classList.add("hidden")
-    app.classList.remove("hidden")
-    init()
-}
-
-// ===== STORAGE KEY =====
-function key(n){ return currentUser+"_"+n }
-
-// ===== INIT =====
-function init(){
-    grid.innerHTML=""
-
-    for(let i=0;i<20;i++){
-        let el=document.createElement("input")
-        el.id="g"+i
-        el.type="number"
-        el.step="0.1"
-
-        el.addEventListener("input", aggiorna)
-        grid.appendChild(el)
-    }
-
-    load()
-    aggiorna()
-}
-
-// ===== SAVE/LOAD =====
-function save(){
-    for(let i=0;i<20;i++){
-        localStorage.setItem(key("g"+i), document.getElementById("g"+i).value)
-    }
-}
-
-function load(){
-    for(let i=0;i<20;i++){
-        let v = localStorage.getItem(key("g"+i))
-        if(v) document.getElementById("g"+i).value = v
-    }
-}
-
-// ===== DATA =====
-function getData(){
-    let arr=[]
-    for(let i=0;i<20;i++){
-        let v=document.getElementById("g"+i).value
-        if(v!=="") arr.push(parseFloat(v))
-    }
-    return arr
-}
-
-// ===== HCP =====
-function calc(list){
-    if(list.length<8) return null
-    let sorted=[...list].sort((a,b)=>a-b)
-    let top8=sorted.slice(0,8)
-    return top8.reduce((a,b)=>a+b,0)/8
-}
-
-// ===== UPDATE =====
-function aggiorna(){
-
-    let list=getData()
-
-    if(list.length<8){
-        hcp.innerText="--"
-        return
-    }
-
-    let sorted=[...list].sort((a,b)=>a-b)
-    let top8=sorted.slice(0,8)
-
-    let val=calc(list)
-    hcp.innerText=val.toFixed(2)
-
-    // evidenzia top8
-    let count={}
-    top8.forEach(x=>count[x]=(count[x]||0)+1)
-
-    for(let i=0;i<20;i++){
-        let el=document.getElementById("g"+i)
-        let v=el.value
-
-        if(v!==""){
-            let n=parseFloat(v)
-            if(count[n]){
-                el.classList.add("highlight")
-                count[n]--
-            } else el.classList.remove("highlight")
-        } else el.classList.remove("highlight")
-    }
-
-    aggiornaGrafico(list)
-    save()
-}
-
-// ===== GRAFICO =====
-function aggiornaGrafico(list){
-
-    let andamento=[]
-    for(let i=8;i<=list.length;i++){
-        andamento.push(calc(list.slice(0,i)))
-    }
-
-    if(window.chart) window.chart.destroy()
-
-    window.chart=new Chart(grafico,{
-        type:'line',
-        data:{
-            labels: andamento.map((_,i)=>i+8),
-            datasets:[{
-                data: andamento,
-                borderColor:'green',
-                tension:0.3
-            }]
-        }
-    })
-}
-
-// ===== SIMULAZIONE STB =====
 function simula(){
 
-    let list=getData()
+    let original = []
 
-    let stb=parseFloat(sim.value)
+    // ✅ ricrea array completo in ordine (cronologico)
+    for(let i=0;i<20;i++){
+        let v=document.getElementById("g"+i).value
+        if(v !== "") original.push(parseFloat(v))
+    }
+
+    let stb = parseFloat(document.getElementById("sim").value)
     if(isNaN(stb)) return
 
     // ✅ STB → SD
-    let sd = 36 - stb
+    let newSD = 36 - stb
 
-    let copy=[...list]
+    // ✅ crea nuova lista come Excel
+    let nuovaLista = [...original]
 
-    if(copy.length>=20) copy.shift()
+    if(nuovaLista.length >= 20){
+        nuovaLista.shift()  // elimina la più vecchia
+    }
 
-    copy.push(sd)
+    nuovaLista.push(newSD)
 
-    let newHcp=calc(copy)
-    let oldHcp=calc(list)
+    // ✅ calcolo HCP ATTUALE
+    let hcpAttuale = calc(original)
 
-    let delta=newHcp-oldHcp
-    let stato=delta<0?"🟢 SCENDI":"🔴 SALI"
+    // ✅ calcolo HCP NUOVO (ricalcolo completo)
+    let hcpNuovo = calc([...nuovaLista])
+
+    let delta = hcpNuovo - hcpAttuale
+
+    let stato = delta < 0 ? "🟢 SCENDI" : "🔴 SALI"
 
     simOut.innerHTML =
-        "Nuovo HCP: "+newHcp.toFixed(2)+"<br>"+
-        "Δ "+delta.toFixed(2)+" "+stato
+        "Nuovo HCP: " + hcpNuovo.toFixed(2) + "<br>" +
+        "Δ " + delta.toFixed(2) + " " + stato
 
-    // ✅ aggiorna grande
-    hcp.innerText=newHcp.toFixed(2)
+    // ✅ aggiorna numero grande
+    hcp.innerText = hcpNuovo.toFixed(2)
 
-    // ✅ aggiorna grafico
-    aggiornaGrafico(copy)
+    // ✅ grafico COMPLETO
+    aggiornaGrafico([...nuovaLista])
 }
-
-</script>
-
-</body>
-</html>
