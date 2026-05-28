@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>HCP Golf Pro</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f5f5f5;
+    padding: 15px;
+}
+
+h1 {
+    color: #1B5E20;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    font-size: 16px;
+    background: #1B5E20;
+    color: white;
+    border: none;
+    border-radius: 6px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+.big {
+    font-size: 40px;
+    font-weight: bold;
+    color: #1B5E20;
+}
+
+.star {
+    color: gold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>⛳ HCP Golf Pro</h1>
+
+<div class="card">
+    <div>HCP ATTUALE</div>
+    <div id="hcp" class="big">0</div>
+</div>
+
+<div class="card">
+    <input type="number" id="stb" placeholder="Inserisci STB">
+    <button onclick="aggiungi()">➕ Aggiungi gara</button>
+</div>
+
+<div class="card">
+    <textarea id="importText" placeholder="Incolla risultati FIG"></textarea>
+    <button onclick="importa()">📥 Importa risultati</button>
+</div>
+
+<div class="card">
+    <input type="number" id="simulaStb" placeholder="Simula STB">
+    <button onclick="simula()">🔮 Simula HCP</button>
+    <div id="simulaOutput"></div>
+</div>
+
+<div class="card">
+    <canvas id="grafico" height="150"></canvas>
+</div>
+
+<div class="card">
+    <div><strong>Storico gare</strong></div>
+    <div id="storico"></div>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("hcp")) || []
+
+function salva() {
+    localStorage.setItem("hcp", JSON.stringify(data))
+}
+
+function calcolaHcp(lista) {
+    if (lista.length < 8) return 0
+    let sorted = [...lista].sort((a,b)=>a-b)
+    let top8 = sorted.slice(0,8)
+    return media(top8)
+}
+
+function media(arr) {
+    return arr.reduce((a,b)=>a+b, 0) / arr.length
+}
+
+function aggiungi() {
+    let stb = parseInt(document.getElementById("stb").value)
+    if (!stb) return
+
+    let diff = 36 - stb
+
+    if (data.length >= 20) data.shift()
+    data.push(diff)
+
+    salva()
+    aggiorna()
+}
+
+function importa() {
+    let text = document.getElementById("importText").value
+    let numeri = text.match(/\b\d{2}\b/g)
+
+    if (!numeri) return
+
+    numeri.forEach(n => aggiungiNumero(parseInt(n)))
+
+    salva()
+    aggiorna()
+}
+
+function aggiungiNumero(stb) {
+    let diff = 36 - stb
+
+    if (data.length >= 20) data.shift()
+    data.push(diff)
+}
+
+function simula() {
+    let stb = parseInt(document.getElementById("simulaStb").value)
+    if (!stb) return
+
+    let copia = [...data]
+    let diff = 36 - stb
+
+    if (copia.length >= 20) copia.shift()
+    copia.push(diff)
+
+    let attuale = calcolaHcp(data)
+    let nuovo = calcolaHcp(copia)
+
+    let stato = nuovo < attuale ? "🟢 SCENDI" : "🔴 SALI"
+
+    document.getElementById("simulaOutput").innerHTML =
+        `Nuovo HCP: ${nuovo.toFixed(2)}<br>${stato}`
+}
+
+function aggiorna() {
+    let hcp = calcolaHcp(data)
+    document.getElementById("hcp").innerText = hcp.toFixed(2)
+
+    let sorted = [...data].sort((a,b)=>a-b)
+    let top8 = sorted.slice(0,8)
+
+    let html = ""
+    data.forEach(d => {
+        let star = top8.includes(d) ? "⭐" : ""
+        html += `${d.toFixed(2)} ${star}<br>`
+    })
+
+    document.getElementById("storico").innerHTML = html
+
+    disegnaGrafico()
+}
+
+function disegnaGrafico() {
+    let ctx = document.getElementById("grafico").getContext("2d")
+    let andamento = []
+
+    for (let i=0; i<data.length; i++) {
+        andamento.push(calcolaHcp(data.slice(0, i+1)))
+    }
+
+    if (window.chart) window.chart.destroy()
+
+    window.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: andamento.map((_, i) => i + 1),
+            datasets: [{
+                label: 'HCP',
+                data: andamento,
+                borderColor: 'green',
+                fill: false,
+                tension: 0.2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    })
+}
+
+aggiorna()
+
+</script>
+
+</body>
+</html>
