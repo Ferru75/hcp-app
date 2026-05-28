@@ -5,13 +5,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>HCP Golf Pro</title>
+<title>HCP PRO</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
-    font-family: -apple-system, Arial;
+    font-family: Arial;
     background:#e8f5e9;
     margin:0;
     padding:12px;
@@ -27,12 +27,12 @@ h2 {
     padding:15px;
     margin-bottom:12px;
     border-radius:16px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
 .grid {
     display:grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5,1fr);
     gap:6px;
 }
 
@@ -40,75 +40,57 @@ input {
     width:100%;
     padding:12px;
     text-align:center;
-    border:1px solid #ddd;
-    border-radius:8px;
     font-size:16px;
-}
-
-input:focus {
-    border-color:#1B5E20;
-    outline:none;
+    border:1px solid #ccc;
+    border-radius:8px;
 }
 
 button {
     width:100%;
     padding:12px;
     margin-top:10px;
-    background: linear-gradient(45deg,#1B5E20,#43A047);
+    background:linear-gradient(45deg,#1B5E20,#43A047);
     color:white;
     border:none;
     border-radius:10px;
-    font-size:16px;
     font-weight:bold;
 }
 
 .big {
-    font-size:48px;
-    font-weight:bold;
+    font-size:40px;
     text-align:center;
     color:#1B5E20;
+    font-weight:bold;
 }
-
-.stat {
-    text-align:center;
-    font-size:18px;
-    margin-top:5px;
-}
-
-.green {color:#2E7D32;}
-.red {color:#C62828;}
 
 .highlight {
     border:2px solid gold !important;
 }
 
-canvas {
-    margin-top:10px;
-}
+.green {color:green;}
+.red {color:red;}
+
+.stat {text-align:center;margin-top:8px;}
 </style>
 </head>
 
 <body>
 
-<h2>⛳ HCP Golf Pro</h2>
+<h2>⛳ HCP PRO</h2>
 
 <div class="container">
-    <label>HCP Attuale</label>
-    <input id="hcpBase" type="number" step="0.1">
-</div>
-
-<div class="container">
+    <b>Inserisci gli ultimi SD</b>
     <div class="grid" id="grid"></div>
 </div>
 
 <div class="container">
-    <div class="big" id="hcp">0</div>
-    <div class="stat" id="stato"></div>
+    <div class="big" id="hcp">--</div>
+    <div class="stat" id="info"></div>
 </div>
 
 <div class="container">
-    <input id="simStb" type="number" placeholder="Simula STB">
-    <button id="btnSimula">Simula gara</button>
+    <input id="sim" type="number" step="0.1" placeholder="Nuovo SD">
+    <button id="btnSim">Simula gara</button>
     <div class="stat" id="simRes"></div>
 </div>
 
@@ -118,41 +100,29 @@ canvas {
 
 <script>
 
-// ===== CREAZIONE 20 CASELLE =====
-const grid = document.getElementById("grid")
+// ===== CREA CASELLE =====
 for(let i=0;i<20;i++){
-    let input = document.createElement("input")
-    input.type="number"
-    input.placeholder = i+1
-    input.id="g"+i
-    grid.appendChild(input)
-}
-
-// ===== DATI =====
-let data = JSON.parse(localStorage.getItem("stb")) || []
-let hcpBase = parseFloat(localStorage.getItem("hcpBase")) || 0
-
-document.getElementById("hcpBase").value = hcpBase
-
-// ===== SALVA =====
-function save(){
-    localStorage.setItem("stb", JSON.stringify(data))
-    localStorage.setItem("hcpBase", hcpBase)
+    let el=document.createElement("input")
+    el.id="g"+i
+    el.type="number"
+    el.step="0.1"
+    el.placeholder=i+1
+    document.getElementById("grid").appendChild(el)
 }
 
 // ===== PRENDI DATI =====
 function getData(){
-    let arr = []
+    let arr=[]
     for(let i=0;i<20;i++){
         let v=document.getElementById("g"+i).value
-        if(v) arr.push(36 - parseFloat(v))
+        if(v!=="") arr.push(parseFloat(v))
     }
     return arr
 }
 
-// ===== CALCOLO =====
+// ===== HCP =====
 function calcHCP(list){
-    if(list.length<8) return hcpBase
+    if(list.length<8) return null
     let sorted=[...list].sort((a,b)=>a-b)
     let top8=sorted.slice(0,8)
     return top8.reduce((a,b)=>a+b,0)/8
@@ -161,81 +131,93 @@ function calcHCP(list){
 // ===== UPDATE =====
 function aggiorna(){
 
-    hcpBase = parseFloat(document.getElementById("hcpBase").value) || 0
-    let list = getData()
+    let list=getData()
 
-    let hcp = calcHCP(list)
+    if(list.length<8){
+        document.getElementById("hcp").innerText="--"
+        document.getElementById("info").innerText="Inserisci almeno 8 SD"
+        return
+    }
 
-    document.getElementById("hcp").innerText = hcp.toFixed(2)
-
-    let diff = hcp - hcpBase
-    let stato = diff < 0 ? "🟢 SCENDI" : "🔴 SALI"
-
-    document.getElementById("stato").innerHTML = stato
-
-    // highlight top 8
     let sorted=[...list].sort((a,b)=>a-b)
     let top8=sorted.slice(0,8)
 
-    for(let i=0;i<20;i++){
-        let val=document.getElementById("g"+i).value
-        let el=document.getElementById("g"+i)
+    let hcp=calcHCP(list)
+    document.getElementById("hcp").innerText=hcp.toFixed(2)
 
-        if(val && top8.includes(36-val)){
-            el.classList.add("highlight")
-        } else {
-            el.classList.remove("highlight")
-        }
+    let worstTop8 = top8[top8.length-1]
+
+    document.getElementById("info").innerText =
+        "Worst Top 8: "+worstTop8.toFixed(2)
+
+    // evidenzia top8 corretti
+    let count={}
+    top8.forEach(x=>count[x]=(count[x]||0)+1)
+
+    for(let i=0;i<20;i++){
+        let el=document.getElementById("g"+i)
+        let val=el.value
+
+        if(val!==""){
+            let v=parseFloat(val)
+            if(count[v]){
+                el.classList.add("highlight")
+                count[v]--
+            } else el.classList.remove("highlight")
+        } else el.classList.remove("highlight")
     }
 
     // grafico
     let andamento=[]
-    for(let i=1;i<=list.length;i++){
+    for(let i=8;i<=list.length;i++){
         andamento.push(calcHCP(list.slice(0,i)))
     }
 
     if(window.chart) window.chart.destroy()
-
-    window.chart = new Chart(document.getElementById("grafico"),{
+    window.chart=new Chart(document.getElementById("grafico"),{
         type:'line',
         data:{
-            labels: andamento.map((_,i)=>i+1),
-            datasets:[{
-                data: andamento,
-                borderColor:'green',
-                tension:0.3
-            }]
+            labels: andamento.map((_,i)=>i+8),
+            datasets:[{data: andamento, borderColor:'green'}]
         },
-        options:{
-            plugins:{legend:{display:false}}
-        }
+        options:{plugins:{legend:{display:false}}}
     })
-
-    save()
 }
 
 // ===== SIMULAZIONE =====
-document.getElementById("btnSimula").addEventListener("click", function(){
+document.getElementById("btnSim").addEventListener("click",function(){
 
     let list=getData()
-    let stb=parseInt(document.getElementById("simStb").value)
+    let sd=parseFloat(document.getElementById("sim").value)
 
-    if(!stb) return
+    if(isNaN(sd)) return
+
+    if(list.length<8) return
 
     let copy=[...list]
+
+    // rimuove la più vecchia
     if(copy.length>=20) copy.shift()
-    copy.push(36-stb)
 
-    let nuovo=calcHCP(copy)
-    let diff=nuovo-hcpBase
+    copy.push(sd)
 
-    let stato = diff<0 ? "🟢 SCENDI" : "🔴 SALI"
+    let oldHcp=calcHCP(list)
+    let newHcp=calcHCP(copy)
+
+    let delta=newHcp-oldHcp
+
+    let stato = delta<0 ? "🟢 SCENDI" : "🔴 SALI"
+
+    let sorted=[...copy].sort((a,b)=>a-b)
+    let worstNew=sorted.slice(0,8)[7]
 
     document.getElementById("simRes").innerHTML =
-        nuovo.toFixed(2)+" · "+stato
+        "Nuovo HCP: "+newHcp.toFixed(2)+"<br>"+
+        "Δ "+delta.toFixed(2)+" "+stato+"<br>"+
+        "Nuovo Worst Top8: "+worstNew.toFixed(2)
 })
 
-// aggiorna live
+// live update
 document.addEventListener("input", aggiorna)
 
 aggiorna()
