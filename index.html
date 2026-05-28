@@ -2,26 +2,17 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCP Golf Pro</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1B5E20">
 
-<meta charset="UTF-8">
-<title>HCP Golf Pro</title>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-</script>
-
-    body {
+body {
     font-family: Arial;
     background: #f5f5f5;
     padding: 15px;
@@ -61,10 +52,6 @@ input, textarea {
     font-weight: bold;
     color: #1B5E20;
 }
-
-.star {
-    color: gold;
-}
 </style>
 </head>
 
@@ -94,16 +81,15 @@ input, textarea {
 </div>
 
 <div class="card">
-    <canvas id="grafico" height="150"></canvas>
+    <canvas id="grafico"></canvas>
 </div>
 
 <div class="card">
-    <div><strong>Storico gare</strong></div>
+    <strong>Storico gare</strong>
     <div id="storico"></div>
 </div>
 
 <script>
-
 let data = JSON.parse(localStorage.getItem("hcp")) || []
 
 function salva() {
@@ -113,22 +99,15 @@ function salva() {
 function calcolaHcp(lista) {
     if (lista.length < 8) return 0
     let sorted = [...lista].sort((a,b)=>a-b)
-    let top8 = sorted.slice(0,8)
-    return media(top8)
-}
-
-function media(arr) {
-    return arr.reduce((a,b)=>a+b, 0) / arr.length
+    return sorted.slice(0,8).reduce((a,b)=>a+b,0)/8
 }
 
 function aggiungi() {
     let stb = parseInt(document.getElementById("stb").value)
     if (!stb) return
 
-    let diff = 36 - stb
-
     if (data.length >= 20) data.shift()
-    data.push(diff)
+    data.push(36 - stb)
 
     salva()
     aggiorna()
@@ -140,17 +119,13 @@ function importa() {
 
     if (!numeri) return
 
-    numeri.forEach(n => aggiungiNumero(parseInt(n)))
+    numeri.forEach(n => {
+        if (data.length >= 20) data.shift()
+        data.push(36 - parseInt(n))
+    })
 
     salva()
     aggiorna()
-}
-
-function aggiungiNumero(stb) {
-    let diff = 36 - stb
-
-    if (data.length >= 20) data.shift()
-    data.push(diff)
 }
 
 function simula() {
@@ -158,10 +133,9 @@ function simula() {
     if (!stb) return
 
     let copia = [...data]
-    let diff = 36 - stb
 
     if (copia.length >= 20) copia.shift()
-    copia.push(diff)
+    copia.push(36 - stb)
 
     let attuale = calcolaHcp(data)
     let nuovo = calcolaHcp(copia)
@@ -181,48 +155,43 @@ function aggiorna() {
 
     let html = ""
     data.forEach(d => {
-        let star = top8.includes(d) ? "⭐" : ""
-        html += `${d.toFixed(2)} ${star}<br>`
+        html += `${d.toFixed(2)} ${top8.includes(d) ? "⭐" : ""}<br>`
     })
 
     document.getElementById("storico").innerHTML = html
-
     disegnaGrafico()
 }
 
 function disegnaGrafico() {
-    let ctx = document.getElementById("grafico").getContext("2d")
-    let andamento = []
+    let ctx = document.getElementById("grafico")
 
-    for (let i=0; i<data.length; i++) {
-        andamento.push(calcolaHcp(data.slice(0, i+1)))
-    }
+    let andamento = data.map((_,i)=>
+        calcolaHcp(data.slice(0,i+1))
+    )
 
     if (window.chart) window.chart.destroy()
 
-    window.chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: andamento.map((_, i) => i + 1),
-            datasets: [{
-                label: 'HCP',
+    window.chart = new Chart(ctx,{
+        type:'line',
+        data:{
+            labels: andamento.map((_,i)=>i+1),
+            datasets:[{
                 data: andamento,
-                borderColor: 'green',
-                fill: false,
-                tension: 0.2
+                borderColor:'green'
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
+        options:{
+            plugins:{legend:{display:false}}
         }
     })
 }
 
 aggiorna()
 
+// SERVICE WORKER (attiva installazione)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+}
 </script>
 
 </body>
