@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HCP PRO</title>
 
-<!-- ✅ CORRETTO -->
+<!-- ✅ SCRIPT CORRETTO -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -63,12 +63,15 @@ button {
     border:2px solid gold !important;
 }
 
+.stat { text-align:center; margin-top:8px; }
+
 .hidden { display:none; }
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="loginBox" class="container">
     <h2>Login</h2>
     <input id="user" placeholder="Nome utente">
@@ -77,6 +80,7 @@ button {
     <button onclick="register()">Crea profilo</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
 
 <h2>⛳ HCP PRO</h2>
@@ -91,14 +95,14 @@ button {
 </div>
 
 <div class="container">
-    <div>IL TUO HCP</div>
+    <div class="stat">IL TUO HCP</div>
     <div class="big" id="hcp">--</div>
 </div>
 
 <div class="container">
     <input id="sim" type="number" placeholder="Inserisci STB (es. 36)">
     <button onclick="simula()">Inserisci il tuo prossimo STB e Simula</button>
-    <div id="simOut"></div>
+    <div class="stat" id="simOut"></div>
 </div>
 
 <div class="container">
@@ -111,6 +115,7 @@ button {
 
 let currentUser = null
 
+// ===== LOGIN =====
 function register(){
     let u=user.value
     let p=pass.value
@@ -138,8 +143,8 @@ function startApp(){
 
 function key(n){ return currentUser+"_"+n }
 
+// ===== INIT =====
 function init(){
-
     grid.innerHTML=""
 
     for(let i=0;i<20;i++){
@@ -156,6 +161,7 @@ function init(){
     aggiorna()
 }
 
+// ===== SAVE/LOAD =====
 function save(){
     for(let i=0;i<20;i++){
         localStorage.setItem(key("g"+i),
@@ -170,6 +176,7 @@ function load(){
     }
 }
 
+// ===== DATA =====
 function getData(){
     let arr=[]
     for(let i=0;i<20;i++){
@@ -179,13 +186,25 @@ function getData(){
     return arr
 }
 
+// ✅ CALCOLO IDENTICO EXCEL
 function calc(list){
-    if(list.length<8) return null
-    let sorted=[...list].sort((a,b)=>a-b)
-    return sorted.slice(0,8)
-        .reduce((a,b)=>a+b,0)/8
+
+    if(list.length < 8) return null
+
+    // copia isolata (fondamentale)
+    let sorted = list.slice().sort((a,b)=>a-b)
+
+    let top8 = sorted.slice(0,8)
+
+    let sum = 0
+    for(let i=0;i<8;i++){
+        sum += top8[i]
+    }
+
+    return sum / 8
 }
 
+// ===== UPDATE =====
 function aggiorna(){
 
     let list=getData()
@@ -195,18 +214,43 @@ function aggiorna(){
         return
     }
 
+    let sorted = list.slice().sort((a,b)=>a-b)
+    let top8 = sorted.slice(0,8)
+
     let val=calc(list)
     hcp.innerText=val.toFixed(2)
+
+    // evidenzia top8 CORRETTAMENTE
+    let count={}
+    top8.forEach(x=>count[x]=(count[x]||0)+1)
+
+    for(let i=0;i<20;i++){
+        let el=document.getElementById("g"+i)
+        let v=el.value
+
+        if(v!==""){
+            let n=parseFloat(v)
+            if(count[n]){
+                el.classList.add("highlight")
+                count[n]--
+            } else el.classList.remove("highlight")
+        } else el.classList.remove("highlight")
+    }
 
     aggiornaGrafico(list)
     save()
 }
 
+// ===== GRAFICO =====
 function aggiornaGrafico(list){
 
     let andamento=[]
+
     for(let i=8;i<=list.length;i++){
-        andamento.push(calc(list.slice(0,i)))
+        let sub = list.slice(0,i)  // ✅ copia
+
+        let val = calc(sub)
+        if(val !== null) andamento.push(val)
     }
 
     if(window.chart) chart.destroy()
@@ -217,37 +261,44 @@ function aggiornaGrafico(list){
             labels: andamento.map((_,i)=>i+8),
             datasets:[{
                 data: andamento,
-                borderColor:'green'
+                borderColor:'green',
+                tension:0.3
             }]
         }
     })
 }
 
+// ✅ SIMULAZIONE IDENTICA EXCEL
 function simula(){
 
-    let list=getData()
+    let baseList = getData()
 
-    let stb=parseFloat(sim.value)
+    let stb = parseFloat(sim.value)
     if(isNaN(stb)) return
 
-    let sd = 36 - stb
+    let newSD = 36 - stb
 
-    let copy=[...list]
-    if(copy.length>=20) copy.shift()
-    copy.push(sd)
+    let newList = baseList.slice()
 
-    let newHcp=calc(copy)
-    let oldHcp=calc(list)
+    if(newList.length >= 20){
+        newList.shift()
+    }
 
-    let delta=newHcp-oldHcp
-    let stato=delta<0?"🟢 SCENDI":"🔴 SALI"
+    newList.push(newSD)
+
+    let oldHcp = calc(baseList)
+    let newHcp = calc(newList)
+
+    let delta = newHcp - oldHcp
+    let stato = delta < 0 ? "🟢 SCENDI" : "🔴 SALI"
 
     simOut.innerHTML =
-        "Nuovo HCP: "+newHcp.toFixed(2)+"<br>"+
-        "Δ "+delta.toFixed(2)+" "+stato
+        "Nuovo HCP: " + newHcp.toFixed(2) + "<br>" +
+        "Δ " + delta.toFixed(2) + " " + stato
 
-    hcp.innerText=newHcp.toFixed(2)
-    aggiornaGrafico(copy)
+    hcp.innerText = newHcp.toFixed(2)
+
+    aggiornaGrafico(newList)
 }
 
 </script>
