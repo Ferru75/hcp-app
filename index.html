@@ -7,16 +7,18 @@
 
 <title>HCP Golf Pro</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1B5E20">
-
+<!-- CHART JS CORRETTO -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
     font-family: Arial;
-    background: #f5f5f5;
     padding: 15px;
+    background: #f5f5f5;
+}
+
+h2 {
+    color: #1B5E20;
 }
 
 button {
@@ -26,6 +28,7 @@ button {
     background: #1B5E20;
     color: white;
     border: none;
+    font-size: 16px;
 }
 
 input, textarea {
@@ -39,6 +42,7 @@ input, textarea {
     font-weight: bold;
 }
 </style>
+
 </head>
 
 <body>
@@ -49,91 +53,132 @@ input, textarea {
     HCP: <span id="hcp" class="big">0</span>
 </div>
 
-<input type="number" id="stb" placeholder="STB">
+<input id="stb" type="number" placeholder="Inserisci STB">
 <button onclick="aggiungi()">Aggiungi gara</button>
 
-<textarea id="importText" placeholder="Incolla risultati"></textarea>
-<button onclick="importa()">Importa</button>
+<textarea id="importText" placeholder="Incolla risultati FIG"></textarea>
+<button onclick="importa()">Importa risultati</button>
 
-<input type="number" id="simulaStb" placeholder="Simula STB">
+<input id="simulaStb" type="number" placeholder="Simula STB">
 <button onclick="simula()">Simula</button>
 
 <div id="simulaOutput"></div>
 
-<canvas id="grafico"></canvas>
+<canvas id="grafico" style="margin-top:20px;"></canvas>
 
 <script>
 
+/* ======================
+   DATI
+====================== */
 let data = JSON.parse(localStorage.getItem("hcp")) || []
 
 function salva() {
     localStorage.setItem("hcp", JSON.stringify(data))
 }
 
-function hcpCalc(arr){
-    if(arr.length<8) return 0
-    return arr.sort((a,b)=>a-b).slice(0,8).reduce((a,b)=>a+b,0)/8
+/* ======================
+   CALCOLO HCP
+====================== */
+function calcolaHcp(lista) {
+    if (lista.length < 8) return 0
+
+    let sorted = [...lista].sort((a,b)=>a-b)
+    let top8 = sorted.slice(0,8)
+
+    return top8.reduce((a,b)=>a+b,0) / 8
 }
 
-function aggiungi(){
-    let stb = parseInt(document.getElementById("stb").value)
-    if(!stb) return
-    if(data.length>=20) data.shift()
-    data.push(36-stb)
-    salva()
-    aggiorna()
-}
+/* ======================
+   AGGIORNA UI
+====================== */
+function aggiorna() {
 
-function importa(){
-    let txt=document.getElementById("importText").value
-    let nums = txt.match(/\d{2}/g)
-    if(!nums) return
+    document.getElementById("hcp").innerText =
+        calcolaHcp(data).toFixed(2)
 
-    nums.forEach(n=>{
-        if(data.length>=20) data.shift()
-        data.push(36-parseInt(n))
-    })
+    let andamento = data.map((_,i)=> 
+        calcolaHcp(data.slice(0,i+1))
+    )
 
-    salva()
-    aggiorna()
-}
+    if (window.chart) window.chart.destroy()
 
-function simula(){
-    let stb=parseInt(document.getElementById("simulaStb").value)
-    if(!stb) return
-
-    let copy=[...data]
-    if(copy.length>=20) copy.shift()
-    copy.push(36-stb)
-
-    let res = hcpCalc(copy)
-    document.getElementById("simulaOutput").innerText="Nuovo HCP: "+res.toFixed(2)
-}
-
-function aggiorna(){
-    let val = hcpCalc(data)
-    document.getElementById("hcp").innerText=val.toFixed(2)
-
-    let ctx=document.getElementById("grafico")
-
-    let andamento=data.map((_,i)=>hcpCalc(data.slice(0,i+1)))
-
-    if(window.chart) window.chart.destroy()
-
-    window.chart=new Chart(ctx,{
-        type:'line',
-        data:{
-            labels: andamento.map((_,i)=>i+1),
-            datasets:[{data:andamento,borderColor:'green'}]
+    window.chart = new Chart(
+        document.getElementById("grafico"),
+        {
+            type: 'line',
+            data: {
+                labels: andamento.map((_,i)=> i+1),
+                datasets: [{
+                    data: andamento,
+                    borderColor: 'green',
+                    fill: false,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false }
+                }
+            }
         }
+    )
+}
+
+/* ======================
+   AGGIUNGI GARA
+====================== */
+function aggiungi() {
+
+    let stb = parseInt(document.getElementById("stb").value)
+    if (!stb) return
+
+    if (data.length >= 20) data.shift()
+
+    data.push(36 - stb)
+
+    salva()
+    aggiorna()
+}
+
+/* ======================
+   IMPORTA
+====================== */
+function importa() {
+
+    let text = document.getElementById("importText").value
+
+    let numeri = text.match(/\d{2}/g)
+    if (!numeri) return
+
+    numeri.forEach(n => {
+        if (data.length >= 20) data.shift()
+        data.push(36 - parseInt(n))
     })
+
+    salva()
+    aggiorna()
 }
 
+/* ======================
+   SIMULAZIONE
+====================== */
+function simula() {
+
+    let stb = parseInt(document.getElementById("simulaStb").value)
+    if (!stb) return
+
+    let copia = [...data]
+
+    if (copia.length >= 20) copia.shift()
+    copia.push(36 - stb)
+
+    document.getElementById("simulaOutput").innerText =
+        "Nuovo HCP: " + calcolaHcp(copia).toFixed(2)
+}
+
+/* ====================== */
 aggiorna()
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-}
 
 </script>
 
