@@ -7,20 +7,16 @@
 
 <title>HCP Golf Pro</title>
 
-<!-- CHART JS CORRETTO -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
+<!-- ✅ SCRIPT CORRETTO -->
+<script src="https://cdn.jsdelivr.net/npm/chart.jstyle>
 body {
     font-family: Arial;
     padding: 15px;
     background: #f5f5f5;
 }
-
 h2 {
     color: #1B5E20;
 }
-
 button {
     width: 100%;
     padding: 10px;
@@ -30,13 +26,11 @@ button {
     border: none;
     font-size: 16px;
 }
-
 input, textarea {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
 }
-
 .big {
     font-size: 30px;
     font-weight: bold;
@@ -54,13 +48,13 @@ input, textarea {
 </div>
 
 <input id="stb" type="number" placeholder="Inserisci STB">
-<button onclick="aggiungi()">Aggiungi gara</button>
+<button id="btnAdd">Aggiungi gara</button>
 
 <textarea id="importText" placeholder="Incolla risultati FIG"></textarea>
-<button onclick="importa()">Importa risultati</button>
+<button id="btnImport">Importa risultati</button>
 
 <input id="simulaStb" type="number" placeholder="Simula STB">
-<button onclick="simula()">Simula</button>
+<button id="btnSimula">Simula</button>
 
 <div id="simulaOutput"></div>
 
@@ -77,21 +71,12 @@ function salva() {
     localStorage.setItem("hcp", JSON.stringify(data))
 }
 
-/* ======================
-   CALCOLO HCP
-====================== */
 function calcolaHcp(lista) {
     if (lista.length < 8) return 0
-
     let sorted = [...lista].sort((a,b)=>a-b)
-    let top8 = sorted.slice(0,8)
-
-    return top8.reduce((a,b)=>a+b,0) / 8
+    return sorted.slice(0,8).reduce((a,b)=>a+b,0)/8
 }
 
-/* ======================
-   AGGIORNA UI
-====================== */
 function aggiorna() {
 
     document.getElementById("hcp").innerText =
@@ -101,35 +86,24 @@ function aggiorna() {
         calcolaHcp(data.slice(0,i+1))
     )
 
+    let canvas = document.getElementById("grafico")
+
     if (window.chart) window.chart.destroy()
 
-    window.chart = new Chart(
-        document.getElementById("grafico"),
-        {
-            type: 'line',
-            data: {
-                labels: andamento.map((_,i)=> i+1),
-                datasets: [{
-                    data: andamento,
-                    borderColor: 'green',
-                    fill: false,
-                    tension: 0.2
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: { display: false }
-                }
-            }
+    window.chart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: andamento.map((_,i)=> i+1),
+            datasets: [{
+                data: andamento,
+                borderColor: 'green',
+                fill: false
+            }]
         }
-    )
+    })
 }
 
-/* ======================
-   AGGIUNGI GARA
-====================== */
 function aggiungi() {
-
     let stb = parseInt(document.getElementById("stb").value)
     if (!stb) return
 
@@ -141,13 +115,8 @@ function aggiungi() {
     aggiorna()
 }
 
-/* ======================
-   IMPORTA
-====================== */
 function importa() {
-
     let text = document.getElementById("importText").value
-
     let numeri = text.match(/\d{2}/g)
     if (!numeri) return
 
@@ -160,11 +129,7 @@ function importa() {
     aggiorna()
 }
 
-/* ======================
-   SIMULAZIONE
-====================== */
 function simula() {
-
     let stb = parseInt(document.getElementById("simulaStb").value)
     if (!stb) return
 
@@ -177,7 +142,11 @@ function simula() {
         "Nuovo HCP: " + calcolaHcp(copia).toFixed(2)
 }
 
-/* ====================== */
+/* ✅ EVENT LISTENER (più sicuri dei onclick) */
+document.getElementById("btnAdd").addEventListener("click", aggiungi)
+document.getElementById("btnImport").addEventListener("click", importa)
+document.getElementById("btnSimula").addEventListener("click", simula)
+
 aggiorna()
 
 </script>
