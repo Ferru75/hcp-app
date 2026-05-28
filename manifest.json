@@ -1,0 +1,16 @@
+
+{
+  "name": "HCP Golf Pro",
+  "short_name": "HCP Golf",
+  "start_url": "/hcp-app/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1B5E20",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/854/854878.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
