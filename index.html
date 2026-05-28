@@ -52,7 +52,7 @@ button {
 }
 
 .big {
-    font-size:40px;
+    font-size:42px;
     text-align:center;
     font-weight:bold;
     color:#1B5E20;
@@ -61,6 +61,8 @@ button {
 .highlight {
     border:2px solid gold !important;
 }
+
+.stat { text-align:center; margin-top:8px; }
 
 .hidden { display:none; }
 </style>
@@ -92,13 +94,14 @@ button {
 </div>
 
 <div class="container">
+    <div class="stat">IL TUO HCP</div>
     <div class="big" id="hcp">--</div>
 </div>
 
 <div class="container">
-    <input id="sim" type="number" step="0.1" placeholder="Nuovo HCP">
-    <button onclick="simula()">Simula</button>
-    <div id="simOut"></div>
+    <input id="sim" type="number" placeholder="Inserisci STB (es. 36)">
+    <button onclick="simula()">Inserisci il tuo prossimo STB e Simula</button>
+    <div class="stat" id="simOut"></div>
 </div>
 
 <div class="container">
@@ -111,46 +114,37 @@ button {
 
 let currentUser = null
 
-// ===== REGISTER =====
+// ===== LOGIN =====
 function register(){
-    let u=document.getElementById("user").value
-    let p=document.getElementById("pass").value
-
-    if(!u || !p) return alert("Inserisci dati")
-
-    localStorage.setItem("user_"+u, p)
+    let u=user.value
+    let p=pass.value
+    if(!u||!p) return alert("Inserisci dati")
+    localStorage.setItem("user_"+u,p)
     alert("Profilo creato")
 }
 
-// ===== LOGIN =====
 function login(){
-    let u=document.getElementById("user").value
-    let p=document.getElementById("pass").value
-
-    let saved = localStorage.getItem("user_"+u)
-
-    if(saved === p){
-        currentUser = u
+    let u=user.value
+    let p=pass.value
+    if(localStorage.getItem("user_"+u)===p){
+        currentUser=u
         startApp()
-    } else {
-        alert("Credenziali errate")
-    }
+    } else alert("Credenziali errate")
 }
 
-function logout(){
-    location.reload()
-}
+function logout(){ location.reload() }
 
-// ===== START =====
 function startApp(){
-    document.getElementById("loginBox").classList.add("hidden")
-    document.getElementById("app").classList.remove("hidden")
+    loginBox.classList.add("hidden")
+    app.classList.remove("hidden")
     init()
 }
 
-// ===== CREA CASELLE =====
+// ===== STORAGE KEY =====
+function key(n){ return currentUser+"_"+n }
+
+// ===== INIT =====
 function init(){
-    let grid=document.getElementById("grid")
     grid.innerHTML=""
 
     for(let i=0;i<20;i++){
@@ -160,33 +154,28 @@ function init(){
         el.step="0.1"
 
         el.addEventListener("input", aggiorna)
-
         grid.appendChild(el)
     }
 
-    loadData()
+    load()
     aggiorna()
 }
 
-// ===== STORAGE PER UTENTE =====
-function key(name){
-    return currentUser + "_" + name
-}
-
-function saveData(){
+// ===== SAVE/LOAD =====
+function save(){
     for(let i=0;i<20;i++){
         localStorage.setItem(key("g"+i), document.getElementById("g"+i).value)
     }
 }
 
-function loadData(){
+function load(){
     for(let i=0;i<20;i++){
-        let v=localStorage.getItem(key("g"+i))
-        if(v) document.getElementById("g"+i).value=v
+        let v = localStorage.getItem(key("g"+i))
+        if(v) document.getElementById("g"+i).value = v
     }
 }
 
-// ===== DATI =====
+// ===== DATA =====
 function getData(){
     let arr=[]
     for(let i=0;i<20;i++){
@@ -196,9 +185,9 @@ function getData(){
     return arr
 }
 
-// ===== CALCOLO =====
-function calcHCP(list){
-    if(list.length<8) return 0
+// ===== HCP =====
+function calc(list){
+    if(list.length<8) return null
     let sorted=[...list].sort((a,b)=>a-b)
     let top8=sorted.slice(0,8)
     return top8.reduce((a,b)=>a+b,0)/8
@@ -210,73 +199,92 @@ function aggiorna(){
     let list=getData()
 
     if(list.length<8){
-        document.getElementById("hcp").innerText="--"
+        hcp.innerText="--"
         return
     }
 
     let sorted=[...list].sort((a,b)=>a-b)
     let top8=sorted.slice(0,8)
 
-    let hcp=calcHCP(list)
-    document.getElementById("hcp").innerText=hcp.toFixed(2)
+    let val=calc(list)
+    hcp.innerText=val.toFixed(2)
 
-    // highlight
+    // evidenzia top8
     let count={}
     top8.forEach(x=>count[x]=(count[x]||0)+1)
 
     for(let i=0;i<20;i++){
-        let val=document.getElementById("g"+i).value
         let el=document.getElementById("g"+i)
+        let v=el.value
 
-        if(val!==""){
-            let v=parseFloat(val)
-            if(count[v]){
+        if(v!==""){
+            let n=parseFloat(v)
+            if(count[n]){
                 el.classList.add("highlight")
-                count[v]--
+                count[n]--
             } else el.classList.remove("highlight")
         } else el.classList.remove("highlight")
     }
 
-    // grafico
+    aggiornaGrafico(list)
+    save()
+}
+
+// ===== GRAFICO =====
+function aggiornaGrafico(list){
+
     let andamento=[]
     for(let i=8;i<=list.length;i++){
-        andamento.push(calcHCP(list.slice(0,i)))
+        andamento.push(calc(list.slice(0,i)))
     }
 
     if(window.chart) window.chart.destroy()
 
-    window.chart=new Chart(document.getElementById("grafico"),{
+    window.chart=new Chart(grafico,{
         type:'line',
         data:{
             labels: andamento.map((_,i)=>i+8),
-            datasets:[{data: andamento, borderColor:'green'}]
+            datasets:[{
+                data: andamento,
+                borderColor:'green',
+                tension:0.3
+            }]
         }
     })
-
-    saveData()
 }
 
-// ===== SIMULA =====
+// ===== SIMULAZIONE STB =====
 function simula(){
 
     let list=getData()
-    let sd=parseFloat(document.getElementById("sim").value)
 
-    if(isNaN(sd)) return
+    let stb=parseFloat(sim.value)
+    if(isNaN(stb)) return
+
+    // ✅ STB → SD
+    let sd = 36 - stb
 
     let copy=[...list]
+
     if(copy.length>=20) copy.shift()
+
     copy.push(sd)
 
-    let newHcp=calcHCP(copy)
-    let oldHcp=calcHCP(list)
+    let newHcp=calc(copy)
+    let oldHcp=calc(list)
 
     let delta=newHcp-oldHcp
     let stato=delta<0?"🟢 SCENDI":"🔴 SALI"
 
-    document.getElementById("simOut").innerHTML =
+    simOut.innerHTML =
         "Nuovo HCP: "+newHcp.toFixed(2)+"<br>"+
         "Δ "+delta.toFixed(2)+" "+stato
+
+    // ✅ aggiorna grande
+    hcp.innerText=newHcp.toFixed(2)
+
+    // ✅ aggiorna grafico
+    aggiornaGrafico(copy)
 }
 
 </script>
