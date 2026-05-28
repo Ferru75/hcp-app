@@ -90,6 +90,7 @@ input, textarea {
 </div>
 
 <script>
+
 let data = JSON.parse(localStorage.getItem("hcp")) || []
 
 function salva() {
@@ -177,7 +178,8 @@ function disegnaGrafico() {
             labels: andamento.map((_,i)=>i+1),
             datasets:[{
                 data: andamento,
-                borderColor:'green'
+                borderColor:'green',
+                tension:0.2
             }]
         },
         options:{
@@ -188,10 +190,11 @@ function disegnaGrafico() {
 
 aggiorna()
 
-// SERVICE WORKER (attiva installazione)
+// SERVICE WORKER
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
 }
+
 </script>
 
 </body>
