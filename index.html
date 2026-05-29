@@ -12,7 +12,7 @@
 body{font-family:Arial;background:#e8f5e9;margin:0}
 .container{background:white;margin:10px;border-radius:14px;padding:14px}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-input,select{width:100%;padding:10px;border-radius:8px;text-align:center}
+input,select{width:100%;padding:10px;border-radius:8px;text-align:center;border:1px solid #ccc}
 button{width:100%;padding:12px;background:green;color:white;border:none;border-radius:10px}
 .big{font-size:46px;text-align:center;font-weight:bold}
 .hidden{display:none}
@@ -22,6 +22,7 @@ button{width:100%;padding:12px;background:green;color:white;border:none;border-r
 
 <body>
 
+<!-- LOGIN -->
 <div id="loginBox" class="container">
 <h3>Login</h3>
 <input id="user" placeholder="User">
@@ -30,6 +31,7 @@ button{width:100%;padding:12px;background:green;color:white;border:none;border-r
 <button onclick="register()">Crea</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
 
 <div class="container">
@@ -48,6 +50,7 @@ Inserisci i tuoi ultimi 20 SD dal più vecchio
 </div>
 
 <div class="container">
+
 <select id="campo"></select>
 
 <select id="tee">
@@ -65,6 +68,7 @@ Inserisci i tuoi ultimi 20 SD dal più vecchio
 <button onclick="simula()">Simula</button>
 
 <div id="out"></div>
+
 </div>
 
 <div class="container">
@@ -87,7 +91,7 @@ if(saved){userCorrente=saved;start()}
 // LOGIN
 function register(){
 if(!user.value || !pass.value){
-alert("Inserisci dati")
+alert("Inserisci user e password")
 return
 }
 localStorage.setItem("u_"+user.value,btoa(pass.value))
@@ -153,7 +157,6 @@ tee.onchange=updateInfo
 function updateInfo(){
 let c=campi.find(x=>x.nome===campo.value)
 if(!c)return
-
 let d=c.tee[tee.value]||c.tee.giallo
 infoCampo.innerHTML="CR: "+d.cr+" | Slope: "+d.slope
 }
@@ -168,15 +171,14 @@ arr.push(v!=="" ? parseFloat(v) : null)
 return arr
 }
 
-// CALCOLO
-function calcFull(list){
+// CALCOLO HCP
+function calcHCP(list){
 let sorted=list.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
-let hcp=top8.reduce((a,b)=>a+b,0)/8
-return {hcp,top8}
+return top8.reduce((a,b)=>a+b,0)/8
 }
 
-// UPDATE
+// UPDATE UI
 function update(){
 
 let full=getFull()
@@ -187,8 +189,8 @@ hcp.innerText="--"
 return
 }
 
-let res=calcFull(clean)
-hcp.innerText=res.hcp.toFixed(2)
+let h=calcHCP(clean)
+hcp.innerText=h.toFixed(2)
 
 // reset colori
 for(let i=0;i<20;i++){
@@ -196,7 +198,10 @@ document.getElementById("g"+i).classList.remove("top8")
 }
 
 // evidenzia top8
-res.top8.forEach(val=>{
+let sorted=clean.slice().sort((a,b)=>a-b)
+let top8=sorted.slice(0,8)
+
+top8.forEach(val=>{
 for(let i=0;i<20;i++){
 let el=document.getElementById("g"+i)
 if(parseFloat(el.value)===val && !el.classList.contains("top8")){
@@ -210,18 +215,24 @@ save()
 draw(clean)
 }
 
-// ✅ ✅ SIMULAZIONE CORRETTA DEFINITIVA
+// ✅ ✅ SIMULAZIONE DEFINITIVA (SEMPLICE E CORRETTA)
 function simula(){
 
 let full=getFull()
 let base=full.filter(v=>v!==null)
 
-if(base.length<8) return
+if(base.length<8){
+out.innerText="Servono almeno 8 score"
+return
+}
 
 let campoSel=campi.find(c=>c.nome===campo.value)
-if(!campoSel) return
+if(!campoSel){
+out.innerText="Seleziona campo"
+return
+}
 
-// CR SLOPE
+// CR e Slope
 let cr=parseFloat(crManuale.value)
 let slope=parseFloat(slopeManuale.value)
 
@@ -229,53 +240,42 @@ let dati = (!isNaN(cr)&&!isNaN(slope))
 ? {cr,slope}
 : (campoSel.tee[tee.value]||campoSel.tee.giallo)
 
-// STABLEFORD → SD
+// STB → SD
 let stb=parseFloat(sim.value)
-if(isNaN(stb)) return
+if(isNaN(stb)){
+out.innerText="Inserisci Stableford"
+return
+}
 
 let sd = (113 / dati.slope) * (36 - stb) + (dati.cr - 72)
 
-// ---- VECCHIO ----
-let oldSorted = base.slice().sort((a,b)=>a-b)
-let oldTop8 = oldSorted.slice(0,8)
+// nuova lista
+let newList = full.slice()
+let removed = newList.shift()
+newList.push(sd)
 
-// ---- NUOVO ----
-let list = full.slice()
-let removed = list.shift()
-list.push(sd)
+// pulita
+let clean = newList.filter(v=>v!==null)
 
-let clean = list.filter(v=>v!==null)
-let newSorted = clean.slice().sort((a,b)=>a-b)
-let newTop8 = newSorted.slice(0,8)
-
-// controlli robusti
-let entraTop = newTop8.some(v => Math.abs(v - sd) < 0.001)
-let removedIsTop = removed !== null && oldTop8.some(v => Math.abs(v - removed) < 0.001)
+// HCP
+let oldHcp = calcHCP(base)
+let newHcp = calcHCP(clean)
 
 // stato
 let stato=""
-
-if(entraTop){
-stato="🟢 SCENDI"
-}else if(removedIsTop && !entraTop){
-stato="🔴 SALI"
-}else{
-stato="⚪ STABILE"
-}
-
-// HCP vero
-let oldH = oldTop8.reduce((a,b)=>a+b,0)/8
-let newH = newTop8.reduce((a,b)=>a+b,0)/8
+if(newHcp < oldHcp) stato="🟢 SCENDI"
+else if(newHcp > oldHcp) stato="🔴 SALI"
+else stato="⚪ STABILE"
 
 // OUTPUT
 out.innerHTML =
-"SD: "+sd.toFixed(2)+"<br>"+
+"SD nuovo: "+sd.toFixed(2)+"<br>"+
 "Esce: "+(removed ? removed.toFixed(2) : "-")+"<br>"+
-"Nuovo HCP: "+newH.toFixed(2)+"<br>"+
-"Δ "+(newH-oldH).toFixed(2)+"<br>"+
+"Nuovo HCP: "+newHcp.toFixed(2)+"<br>"+
+"Δ "+(newHcp-oldHcp).toFixed(2)+"<br>"+
 stato
 
-hcp.innerText=newH.toFixed(2)
+hcp.innerText=newHcp.toFixed(2)
 draw(clean)
 }
 
@@ -283,7 +283,7 @@ draw(clean)
 function draw(list){
 let values=[]
 for(let i=8;i<=list.length;i++){
-values.push(calcFull(list.slice(0,i)).hcp)
+values.push(calcHCP(list.slice(0,i)))
 }
 
 if(window.chart)window.chart.destroy()
