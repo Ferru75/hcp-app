@@ -247,7 +247,16 @@ out.innerText="Inserisci Stableford"
 return
 }
 
-let sd = 36 - stb
+
+// HCP attuale
+let hcpAttuale = calcHCP(base)
+
+// score stimato
+let score = dati.cr + (36 - stb) + hcpAttuale
+
+// SD realistico
+let sd = (113 / dati.slope) * (score - dati.cr)
+
 
 // nuova lista
 let newList = full.slice()
