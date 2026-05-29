@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HCP PRO</title>
 
-<!-- ✅ SCRIPT CORRETTO -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -33,9 +32,9 @@ h2 { text-align:center; color:#1B5E20; }
     gap:6px;
 }
 
-input {
+input, select {
     width:100%;
-    padding:12px;
+    padding:10px;
     border-radius:8px;
     border:1px solid #ccc;
     text-align:center;
@@ -59,19 +58,21 @@ button {
     color:#1B5E20;
 }
 
-.highlight {
-    border:2px solid gold !important;
-}
-
-.stat { text-align:center; margin-top:8px; }
-
 .hidden { display:none; }
+
+.banner {
+    background:#1B5E20;
+    color:white;
+    padding:10px;
+    border-radius:10px;
+    text-align:center;
+    font-weight:bold;
+}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="loginBox" class="container">
     <h2>Login</h2>
     <input id="user" placeholder="Nome utente">
@@ -80,7 +81,6 @@ button {
     <button onclick="register()">Crea profilo</button>
 </div>
 
-<!-- APP -->
 <div id="app" class="hidden">
 
 <h2>⛳ HCP PRO</h2>
@@ -90,19 +90,34 @@ button {
 </div>
 
 <div class="container">
-    <b>Inserisci gli ultimi SD</b>
+    <b>Score Differenziali</b>
     <div class="grid" id="grid"></div>
 </div>
 
 <div class="container">
-    <div class="stat">IL TUO HCP</div>
+    <div>HCP</div>
     <div class="big" id="hcp">--</div>
 </div>
 
 <div class="container">
-    <input id="sim" type="number" placeholder="Inserisci STB (es. 36)">
-    <button onclick="simula()">Inserisci il tuo prossimo STB e Simula</button>
-    <div class="stat" id="simOut"></div>
+    <div class="banner">🏌️ PROSSIMA GARA</div>
+
+    <select id="campo"></select>
+
+    <select id="tee">
+        <option value="">Seleziona Tee</option>
+        <option value="bianco">Bianco</option>
+        <option value="giallo">Giallo</option>
+        <option value="rosso">Rosso</option>
+    </select>
+
+    <div id="infoCampo"></div>
+
+    <input id="sim" type="number" placeholder="Stableford">
+
+    <button onclick="simulaPro()">Simula gara</button>
+
+    <div id="simOut"></div>
 </div>
 
 <div class="container">
@@ -113,27 +128,60 @@ button {
 
 <script>
 
-let currentUser = null
+// ===== DATABASE CAMPI =====
+const campi = {
+
+"Arzaga Golf": {bianco:{cr:73.5,slope:141},giallo:{cr:71.8,slope:135},rosso:{cr:73.2,slope:133}},
+"Albenza Bergamo": {bianco:{cr:71.5,slope:130},giallo:{cr:70.0,slope:127},rosso:{cr:71.8,slope:125}},
+"Biella Golf": {bianco:{cr:72.5,slope:134},giallo:{cr:71.0,slope:130},rosso:{cr:72.0,slope:128}},
+"Bogogno Bonora": {bianco:{cr:73.8,slope:141},giallo:{cr:72.0,slope:137},rosso:{cr:73.0,slope:135}},
+"Bogogno Del Conte": {bianco:{cr:74.2,slope:143},giallo:{cr:73.0,slope:140},rosso:{cr:74.0,slope:138}},
+"Brianza Country Club": {bianco:{cr:72.0,slope:132},giallo:{cr:70.5,slope:128},rosso:{cr:71.8,slope:126}},
+"Carimate Golf": {bianco:{cr:73.0,slope:139},giallo:{cr:72.4,slope:136},rosso:{cr:73.5,slope:134}},
+"Castelconturbia": {bianco:{cr:72.9,slope:138},giallo:{cr:71.0,slope:129},rosso:{cr:72.0,slope:127}},
+"Castello Tolcinasco": {bianco:{cr:73.0,slope:135},giallo:{cr:71.0,slope:130},rosso:{cr:72.0,slope:128}},
+"Cherasco Golf": {bianco:{cr:72.0,slope:131},giallo:{cr:70.8,slope:128},rosso:{cr:71.5,slope:126}},
+"Chervò San Vigilio": {bianco:{cr:73.5,slope:140},giallo:{cr:72.0,slope:138},rosso:{cr:73.0,slope:136}},
+"Circolo Golf Torino Blu": {bianco:{cr:72.5,slope:134},giallo:{cr:71.0,slope:128},rosso:{cr:72.0,slope:126}},
+"Circolo Golf Torino Giallo": {bianco:{cr:73.0,slope:140},giallo:{cr:72.0,slope:138},rosso:{cr:73.0,slope:136}},
+"Des Iles Borromees": {bianco:{cr:71.5,slope:131},giallo:{cr:70.0,slope:127},rosso:{cr:71.5,slope:125}},
+"Franciacorta Golf": {bianco:{cr:72.5,slope:132},giallo:{cr:71.0,slope:128},rosso:{cr:72.0,slope:126}},
+"Golf Club Milano": {bianco:{cr:74.0,slope:140},giallo:{cr:72.0,slope:134},rosso:{cr:73.5,slope:132}},
+"Golf Club Monticello": {bianco:{cr:73.2,slope:138},giallo:{cr:71.7,slope:130},rosso:{cr:72.8,slope:128}},
+"Golf Club Varese": {bianco:{cr:73.0,slope:136},giallo:{cr:72.0,slope:134},rosso:{cr:73.0,slope:132}},
+"Le Rovedine": {bianco:{cr:70.5,slope:125},giallo:{cr:69.5,slope:122},rosso:{cr:70.5,slope:121}},
+"Molinetto Country Club": {bianco:{cr:72.5,slope:135},giallo:{cr:71.0,slope:131},rosso:{cr:72.0,slope:129}},
+"Royal Park I Roveri": {bianco:{cr:73.8,slope:140},giallo:{cr:72.1,slope:134},rosso:{cr:73.2,slope:132}},
+"Stresa Alpino": {bianco:{cr:70.5,slope:128},giallo:{cr:69.8,slope:125},rosso:{cr:70.5,slope:123}},
+"Villa Paradiso": {bianco:{cr:72.5,slope:137},giallo:{cr:71.0,slope:132},rosso:{cr:72.0,slope:130}}
+
+}
 
 // ===== LOGIN =====
+let currentUser=null
+
+window.onload=function(){
+    let saved=localStorage.getItem("lastUser")
+    if(saved){currentUser=saved;startApp()}
+}
+
 function register(){
-    let u=user.value
-    let p=pass.value
-    if(!u||!p) return alert("Inserisci dati")
-    localStorage.setItem("user_"+u,p)
-    alert("Profilo creato")
+    localStorage.setItem("user_"+user.value,btoa(pass.value))
+    localStorage.setItem("lastUser",user.value)
 }
 
 function login(){
-    let u=user.value
-    let p=pass.value
-    if(localStorage.getItem("user_"+u)===p){
-        currentUser=u
+    if(localStorage.getItem("user_"+user.value)===btoa(pass.value)){
+        currentUser=user.value
+        localStorage.setItem("lastUser",user.value)
         startApp()
-    } else alert("Credenziali errate")
+    }
 }
 
-function logout(){ location.reload() }
+function logout(){
+    localStorage.removeItem("lastUser")
+    location.reload()
+}
 
 function startApp(){
     loginBox.classList.add("hidden")
@@ -141,164 +189,125 @@ function startApp(){
     init()
 }
 
-function key(n){ return currentUser+"_"+n }
+function key(n){return currentUser+"_"+n}
 
 // ===== INIT =====
 function init(){
-    grid.innerHTML=""
 
+    // grid
     for(let i=0;i<20;i++){
         let el=document.createElement("input")
         el.id="g"+i
         el.type="number"
         el.step="0.1"
-
-        el.addEventListener("input", aggiorna)
+        el.oninput=aggiorna
         grid.appendChild(el)
     }
+
+    // campi
+    campo.innerHTML='<option value="">Seleziona campo</option>'
+    Object.keys(campi).sort().forEach(c=>{
+        let o=document.createElement("option")
+        o.value=c
+        o.textContent=c
+        campo.appendChild(o)
+    })
 
     load()
     aggiorna()
 }
 
-// ===== SAVE/LOAD =====
-function save(){
-    for(let i=0;i<20;i++){
-        localStorage.setItem(key("g"+i),
-            document.getElementById("g"+i).value)
-    }
-}
-
-function load(){
-    for(let i=0;i<20;i++){
-        let v=localStorage.getItem(key("g"+i))
-        if(v) document.getElementById("g"+i).value=v
-    }
-}
-
 // ===== DATA =====
 function getData(){
-    let arr=[]
+    let a=[]
     for(let i=0;i<20;i++){
         let v=document.getElementById("g"+i).value
-        if(v!=="") arr.push(parseFloat(v))
+        if(v)a.push(parseFloat(v))
     }
-    return arr
+    return a
 }
 
-// ✅ CALCOLO IDENTICO EXCEL
-function calc(list){
-
-    if(list.length < 8) return null
-
-    // copia isolata (fondamentale)
-    let sorted = list.slice().sort((a,b)=>a-b)
-
-    let top8 = sorted.slice(0,8)
-
-    let sum = 0
-    for(let i=0;i<8;i++){
-        sum += top8[i]
-    }
-
-    return sum / 8
+// ===== CALCOLO =====
+function calc(l){
+    if(l.length<8)return null
+    let s=l.slice().sort((a,b)=>a-b).slice(0,8)
+    return s.reduce((a,b)=>a+b,0)/8
 }
 
 // ===== UPDATE =====
 function aggiorna(){
-
     let list=getData()
-
-    if(list.length<8){
-        hcp.innerText="--"
-        return
-    }
-
-    let sorted = list.slice().sort((a,b)=>a-b)
-    let top8 = sorted.slice(0,8)
+    if(list.length<8){hcp.innerText="--";return}
 
     let val=calc(list)
     hcp.innerText=val.toFixed(2)
 
-    // evidenzia top8 CORRETTAMENTE
-    let count={}
-    top8.forEach(x=>count[x]=(count[x]||0)+1)
-
-    for(let i=0;i<20;i++){
-        let el=document.getElementById("g"+i)
-        let v=el.value
-
-        if(v!==""){
-            let n=parseFloat(v)
-            if(count[n]){
-                el.classList.add("highlight")
-                count[n]--
-            } else el.classList.remove("highlight")
-        } else el.classList.remove("highlight")
-    }
-
-    aggiornaGrafico(list)
     save()
+    aggiornaGrafico(list)
 }
 
 // ===== GRAFICO =====
 function aggiornaGrafico(list){
-
-    let andamento=[]
-
+    let arr=[]
     for(let i=8;i<=list.length;i++){
-        let sub = list.slice(0,i)  // ✅ copia
-
-        let val = calc(sub)
-        if(val !== null) andamento.push(val)
+        arr.push(calc(list.slice(0,i)))
     }
 
-    if(window.chart) chart.destroy()
+    if(window.chart)chart.destroy()
 
     window.chart=new Chart(grafico,{
         type:'line',
-        data:{
-            labels: andamento.map((_,i)=>i+8),
-            datasets:[{
-                data: andamento,
-                borderColor:'green',
-                tension:0.3
-            }]
-        }
+        data:{labels:arr.map((_,i)=>i+8),
+        datasets:[{data:arr,borderColor:"green"}]}
     })
 }
 
-// ✅ SIMULAZIONE IDENTICA EXCEL
-function simula(){
+// ===== SAVE =====
+function save(){
+for(let i=0;i<20;i++){
+localStorage.setItem(key("g"+i),document.getElementById("g"+i).value)
+}}
 
-    let baseList = getData()
+function load(){
+for(let i=0;i<20;i++){
+let v=localStorage.getItem(key("g"+i))
+if(v)document.getElementById("g"+i).value=v
+}}
 
-    let stb = parseFloat(sim.value)
-    if(isNaN(stb)) return
+// ===== INFO CAMPO =====
+campo.onchange=tee.onchange=function(){
+if(!campo.value||!tee.value){infoCampo.innerText="";return}
+let d=campi[campo.value][tee.value]
+infoCampo.innerText="CR "+d.cr+" | Slope "+d.slope
+}
 
-    let newSD = 36 - stb
+// ===== SIMULAZIONE =====
+function simulaPro(){
 
-    let newList = baseList.slice()
+let base=getData()
+if(base.length<8)return
 
-    if(newList.length >= 20){
-        newList.shift()
-    }
+let d=campi[campo.value][tee.value]
 
-    newList.push(newSD)
+let stb=parseFloat(sim.value)
+if(isNaN(stb))return
 
-    let oldHcp = calc(baseList)
-    let newHcp = calc(newList)
+let sd=(d.cr-72)+((113/d.slope)*(36-stb))
 
-    let delta = newHcp - oldHcp
-    let stato = delta < 0 ? "🟢 SCENDI" : "🔴 SALI"
+let newList=base.slice()
+if(newList.length>=20)newList.shift()
+newList.push(sd)
 
-    simOut.innerHTML =
-        "Nuovo HCP: " + newHcp.toFixed(2) + "<br>" +
-        "Δ " + delta.toFixed(2) + " " + stato
+let newHcp=calc(newList)
+let delta=newHcp-calc(base)
 
-    hcp.innerText = newHcp.toFixed(2)
+simOut.innerHTML=
+"Diff: "+sd.toFixed(2)+"<br>"+
+"HCP: "+newHcp.toFixed(2)+"<br>"+
+"Δ "+delta.toFixed(2)
 
-    aggiornaGrafico(newList)
+hcp.innerText=newHcp.toFixed(2)
+aggiornaGrafico(newList)
 }
 
 </script>
