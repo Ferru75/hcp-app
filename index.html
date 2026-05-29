@@ -9,12 +9,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:Arial;background:#e8f5e9;padding:10px}
-.container{background:white;padding:12px;margin-bottom:10px;border-radius:12px}
+body{font-family:Arial;background:#e8f5e9;padding:12px}
+.container{background:white;padding:15px;margin-bottom:12px;border-radius:14px}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-input,select{width:100%;padding:8px;text-align:center}
-button{width:100%;padding:10px;background:green;color:white;border:none}
-.big{font-size:36px;text-align:center;font-weight:bold}
+input,select{width:100%;padding:10px;border-radius:8px;text-align:center}
+button{width:100%;padding:10px;margin-top:10px;background:green;color:white;border:none}
+.big{font-size:42px;text-align:center;font-weight:bold}
 .hidden{display:none}
 </style>
 </head>
@@ -23,10 +23,10 @@ button{width:100%;padding:10px;background:green;color:white;border:none}
 
 <div id="loginBox" class="container">
 <h3>Login</h3>
-<input id="user" placeholder="utente">
-<input id="pass" type="password" placeholder="password">
+<input id="user">
+<input id="pass" type="password">
 <button onclick="login()">Login</button>
-<button onclick="register()">Crea utente</button>
+<button onclick="register()">Crea</button>
 </div>
 
 <div id="app" class="hidden">
@@ -40,10 +40,21 @@ button{width:100%;padding:10px;background:green;color:white;border:none}
 </div>
 
 <div class="container">
+
 <select id="campo"></select>
+
+<select id="tee">
+<option value="">TEE</option>
+<option value="giallo">Giallo</option>
+<option value="bianco">Bianco</option>
+</select>
+
 <input id="sim" type="number" placeholder="Stableford">
-<button onclick="simula()">Simula gara</button>
+
+<button onclick="simula()">Simula</button>
+
 <div id="out"></div>
+
 </div>
 
 <div class="container">
@@ -57,8 +68,8 @@ button{width:100%;padding:10px;background:green;color:white;border:none}
 let userCorrente=null
 let campi=[]
 
-// ✅ INIT
-document.addEventListener("DOMContentLoaded",()=>{
+// ✅ START
+window.addEventListener("DOMContentLoaded",()=>{
 let saved=localStorage.getItem("lastUser")
 if(saved){userCorrente=saved;start()}
 })
@@ -76,25 +87,26 @@ if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
 userCorrente=user.value
 localStorage.setItem("lastUser",user.value)
 start()
-}}
-    
-// ✅ START
+}
+}
+
+// ✅ START APP
 function start(){
 loginBox.classList.add("hidden")
 app.classList.remove("hidden")
-initApp()
+init()
 }
 
-// ✅ INIT APP
-async function initApp(){
+// ✅ INIT
+async function init(){
 
 grid.innerHTML=""
 
 for(let i=0;i<20;i++){
 let el=document.createElement("input")
 el.type="number"
-el.id="g"+i
 el.step="0.1"
+el.id="g"+i
 el.oninput=update
 grid.appendChild(el)
 }
@@ -120,27 +132,32 @@ campo.appendChild(o)
 })
 }
 
-// ✅ DATA
+// ✅ PRENDI SCORE
 function getData(){
-let a=[]
+let arr=[]
 for(let i=0;i<20;i++){
 let v=document.getElementById("g"+i).value
-if(v)a.push(parseFloat(v))
+if(v)arr.push(parseFloat(v))
 }
-return a
+return arr
 }
 
-// ✅ HCP
-function calc(l){
-if(l.length<8)return null
-let s=l.slice().sort((a,b)=>a-b).slice(0,8)
-return s.reduce((a,b)=>a+b,0)/8
+// ✅ CALCOLO HCP
+function calc(list){
+if(list.length<8)return null
+let sorted=list.slice().sort((a,b)=>a-b)
+let top8=sorted.slice(0,8)
+return top8.reduce((a,b)=>a+b,0)/8
 }
 
 // ✅ UPDATE
 function update(){
 let list=getData()
-if(list.length<8){hcp.innerText="--";return}
+
+if(list.length<8){
+hcp.innerText="--"
+return
+}
 
 let val=calc(list)
 hcp.innerText=val.toFixed(2)
@@ -149,48 +166,74 @@ save()
 draw(list)
 }
 
-// ✅ GRAFICO
+// ✅ GRAFICO CORRETTO
 function draw(list){
-let arr=[]
+let values=[]
 for(let i=8;i<=list.length;i++){
-arr.push(calc(list.slice(0,i)))
+values.push(calc(list.slice(0,i)))
 }
 
 if(window.chart)chart.destroy()
 
 window.chart=new Chart(grafico,{
 type:'line',
-data:{labels:arr.map((_,i)=>i+8),
-datasets:[{data:arr,borderColor:'green'}]}
+data:{
+labels:values.map((_,i)=>i+8),
+datasets:[{data:values,borderColor:"green"}]
+}
 })
 }
 
-// ✅ SIMULAZIONE
+// ✅ SIMULAZIONE PERFETTA (QUESTA È LA PARTE IMPORTANTE)
 function simula(){
 
 let base=getData()
-if(base.length<8)return
+
+if(base.length<8){
+out.innerText="Servono almeno 8 score"
+return
+}
 
 let campoSel=campi.find(c=>c.nome===campo.value)
-if(!campoSel)return
+if(!campoSel){
+out.innerText="Seleziona campo"
+return
+}
+
+// ✅ TIENE IL TEE SELEZIONATO, ALTRIMENTI GIALLO
+let dati = campoSel.tee[tee.value] || campoSel.tee.giallo
 
 let stb=parseFloat(sim.value)
-if(isNaN(stb))return
+if(isNaN(stb)){
+out.innerText="Inserisci Stableford"
+return
+}
 
-let d=campoSel.tee.giallo
+// ✅ CALCOLO SD REALE
+let sd=(dati.cr-72)+((113/dati.slope)*(36-stb))
 
-let sd=(d.cr-72)+((113/d.slope)*(36-stb))
+// ✅ CLONA LISTA
+let newList=base.slice()
 
-let list=base.slice()
-if(list.length>=20)list.shift()
-list.push(sd)
+// ✅ ESCE LA PIU VECCHIA
+if(newList.length>=20) newList.shift()
 
-let newHcp=calc(list)
+// ✅ ENTRA NUOVA GARA
+newList.push(sd)
 
+// ✅ CALCOLO VECCHIO E NUOVO HCP
+let oldHcp=calc(base)
+let newHcp=calc(newList)
+
+// ✅ VISUAL
+out.innerHTML=
+"Nuovo SD: "+sd.toFixed(2)+"<br>"+
+"HCP: "+newHcp.toFixed(2)+"<br>"+
+"Δ "+(newHcp-oldHcp).toFixed(2)
+
+// ✅ UPDATE UI
 hcp.innerText=newHcp.toFixed(2)
-out.innerHTML="SD: "+sd.toFixed(2)
-
-draw(list)
+draw(newList)
 }
 
 // ✅ STORAGE
