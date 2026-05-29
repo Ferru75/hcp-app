@@ -2,6 +2,10 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+ 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2e7d32">
+ 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HCP PRO</title>
@@ -354,6 +358,10 @@ for(let i=0;i<20;i++){
 let v=localStorage.getItem(userCorrente+"_g"+i)
 if(v)document.getElementById("g"+i).value=v
 }}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+}
 
 </script>
 
