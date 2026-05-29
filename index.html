@@ -11,13 +11,12 @@
 <style>
 body{font-family:Arial;background:#e8f5e9;margin:0}
 .container{background:white;margin:10px;border-radius:14px;padding:14px}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-input,select{width:100%;padding:10px;border-radius:8px;text-align:center;border:1px solid #ccc}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+input,select{width:100%;padding:10px;border-radius:8px;text-align:center}
 button{width:100%;padding:12px;background:green;color:white;border:none;border-radius:10px}
-.big{font-size:48px;text-align:center;font-weight:bold}
+.big{font-size:46px;text-align:center;font-weight:bold}
 .hidden{display:none}
-.good{background:#c8e6c9}
-.bad{background:#ffcdd2}
+.top8{background:#c8e6c9}
 </style>
 </head>
 
@@ -34,6 +33,13 @@ button{width:100%;padding:12px;background:green;color:white;border:none;border-r
 <div id="app" class="hidden">
 
 <div class="container">
+<h1 style="text-align:center;">HCP PRO</h1>
+<p style="text-align:center;font-size:14px;">
+Inserisci i tuoi ultimi 20 SD dal più vecchio
+</p>
+</div>
+
+<div class="container">
 <div class="grid" id="grid"></div>
 </div>
 
@@ -42,7 +48,6 @@ button{width:100%;padding:12px;background:green;color:white;border:none;border-r
 </div>
 
 <div class="container">
-
 <select id="campo"></select>
 
 <select id="tee">
@@ -57,11 +62,9 @@ button{width:100%;padding:12px;background:green;color:white;border:none;border-r
 
 <input id="sim" type="number" placeholder="Stableford">
 
-<button onclick="simula()">Simula gara</button>
+<button onclick="simula()">Simula</button>
 
 <div id="out"></div>
-<div id="target"></div>
-
 </div>
 
 <div class="container">
@@ -75,6 +78,7 @@ button{width:100%;padding:12px;background:green;color:white;border:none;border-r
 let userCorrente=null
 let campi=[]
 
+// AUTOLOGIN
 window.addEventListener("DOMContentLoaded",()=>{
 let saved=localStorage.getItem("lastUser")
 if(saved){userCorrente=saved;start()}
@@ -82,7 +86,10 @@ if(saved){userCorrente=saved;start()}
 
 // LOGIN
 function register(){
-if(!user.value || !pass.value)return
+if(!user.value || !pass.value){
+alert("Inserisci dati")
+return
+}
 localStorage.setItem("u_"+user.value,btoa(pass.value))
 localStorage.setItem("lastUser",user.value)
 userCorrente=user.value
@@ -94,6 +101,8 @@ if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
 userCorrente=user.value
 localStorage.setItem("lastUser",user.value)
 start()
+}else{
+alert("Credenziali errate")
 }
 }
 
@@ -107,6 +116,7 @@ init()
 // INIT
 async function init(){
 grid.innerHTML=""
+
 for(let i=0;i<20;i++){
 let el=document.createElement("input")
 el.type="number"
@@ -115,7 +125,9 @@ el.id="g"+i
 el.oninput=update
 grid.appendChild(el)
 }
+
 await loadCampi()
+
 load()
 update()
 }
@@ -135,17 +147,20 @@ campo.appendChild(o)
 })
 }
 
+// INFO CAMPO
 campo.onchange=updateInfo
 tee.onchange=updateInfo
 
 function updateInfo(){
 let c=campi.find(x=>x.nome===campo.value)
 if(!c)return
+
 let d=c.tee[tee.value]||c.tee.giallo
+
 infoCampo.innerHTML="CR: "+d.cr+" | Slope: "+d.slope
 }
 
-// DATI
+// DATI COMPLETI
 function getFull(){
 let arr=[]
 for(let i=0;i<20;i++){
@@ -177,17 +192,17 @@ return
 let res=calcFull(clean)
 hcp.innerText=res.hcp.toFixed(2)
 
-// reset
+// reset colori
 for(let i=0;i<20;i++){
-document.getElementById("g"+i).className=""
+document.getElementById("g"+i).classList.remove("top8")
 }
 
-// TOP 8 verde
+// evidenzia top8
 res.top8.forEach(val=>{
 for(let i=0;i<20;i++){
 let el=document.getElementById("g"+i)
-if(parseFloat(el.value)===val && !el.classList.contains("good")){
-el.classList.add("good")
+if(parseFloat(el.value)===val && !el.classList.contains("top8")){
+el.classList.add("top8")
 break
 }
 }
@@ -197,70 +212,64 @@ save()
 draw(clean)
 }
 
-// SIMULAZIONE + TARGET 🔥
+// SIMULAZIONE CORRETTA ✅
 function simula(){
 
-let base=getFull().filter(v=>v!==null)
-if(base.length<8)return
+let full=getFull()
+let base=full.filter(v=>v!==null)
+
+if(base.length<8) return
 
 let campoSel=campi.find(c=>c.nome===campo.value)
-if(!campoSel)return
+if(!campoSel) return
 
 let cr=parseFloat(crManuale.value)
 let slope=parseFloat(slopeManuale.value)
 
-let dati=!isNaN(cr)&&!isNaN(slope)
+let dati = (!isNaN(cr)&&!isNaN(slope))
 ? {cr,slope}
 : (campoSel.tee[tee.value]||campoSel.tee.giallo)
 
+// STABLEFORD → SD
 let stb=parseFloat(sim.value)
-if(isNaN(stb))return
+if(isNaN(stb)) return
 
-let sd=(dati.cr-72)+((113/dati.slope)*(36-stb))
+let sd = (113 / dati.slope) * (36 - stb) + (dati.cr - 72)
 
-let full=getFull()
-let removed=full.shift()
-full.push(sd)
+// simulazione lista
+let list = full.slice()
+let removed = list.shift()
+list.push(sd)
 
-let clean=full.filter(v=>v!==null)
+// pulita
+let clean = list.filter(v=>v!==null)
 
-let old=calcFull(base)
-let next=calcFull(clean)
+// calcolo
+let old = calcFull(base)
+let next = calcFull(clean)
 
-// badge risultato
-let stato = ""
-if(next.hcp<old.hcp) stato="🟢 SCENDI"
-else if(next.hcp>old.hcp) stato="🔴 SALI"
-else stato="⚪ STABILE"
+// controlli logici
+let removedIsTop = old.top8.includes(removed)
+let entraTop = next.top8.includes(sd)
 
-// TARGET STB 🔥
-let targetSTB = null
-
-for(let t=20;t<=45;t++){
-let testSD=(dati.cr-72)+((113/dati.slope)*(36-t))
-let testList=base.slice()
-if(testList.length>=20)testList.shift()
-testList.push(testSD)
-let testH=calcFull(testList).hcp
-if(testH<old.hcp){
-targetSTB=t
-break
-}
+// stato
+let stato=""
+if(entraTop){
+stato="🟢 SCENDI"
+}else if(removedIsTop && !entraTop){
+stato="🔴 SALI"
+}else{
+stato="⚪ STABILE"
 }
 
 // OUTPUT
-out.innerHTML=
+out.innerHTML =
 "SD: "+sd.toFixed(2)+"<br>"+
-"HCP: "+next.hcp.toFixed(2)+"<br>"+
+"Esce: "+(removed ? removed.toFixed(2) : "-")+"<br>"+
+"Entra nei Top 8: "+(entraTop ? "SI" : "NO")+"<br>"+
 stato
 
-target.innerHTML= targetSTB
-? "🎯 Devi fare almeno: "+targetSTB+" STB"
-: "🔥 Devi fare gara alta (oltre 45 circa)"
-
-// UPDATE UI
 hcp.innerText=next.hcp.toFixed(2)
-
 draw(clean)
 }
 
@@ -270,6 +279,7 @@ let values=[]
 for(let i=8;i<=list.length;i++){
 values.push(calcFull(list.slice(0,i)).hcp)
 }
+
 if(window.chart)window.chart.destroy()
 
 window.chart=new Chart(grafico,{
@@ -295,5 +305,6 @@ if(v)document.getElementById("g"+i).value=v
 }}
 
 </script>
+
 </body>
 </html>
