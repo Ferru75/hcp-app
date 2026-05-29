@@ -2,13 +2,12 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
- 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2e7d32">
- 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HCP PRO</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2e7d32">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -22,18 +21,39 @@ button{margin-top:6px;width:100%;padding:12px;background:green;color:white;borde
 .hidden{display:none}
 .top8{background:#c8e6c9}
 .warning{background:#ffcdd2}
+
+/* SPLASH */
+#splash{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#2e7d32;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:32px;
+z-index:9999;
+}
 </style>
 </head>
 
 <body>
 
+<div id="splash">HCP PRO ⛳</div>
+
 <!-- LOGIN -->
 <div id="loginBox" class="container">
-<h3>Login</h3>
-<input id="user" placeholder="User">
+<h2 style="text-align:center;">HCP PRO</h2>
+<p style="text-align:center;">Accedi o crea account</p>
+
+<input id="user" placeholder="Username">
 <input id="pass" type="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
-<button onclick="register()">Crea</button>
+<button onclick="register()">Crea account</button>
 </div>
 
 <!-- APP -->
@@ -41,9 +61,8 @@ button{margin-top:6px;width:100%;padding:12px;background:green;color:white;borde
 
 <div class="container">
 <h1 style="text-align:center;">HCP PRO</h1>
-<p style="text-align:center;font-size:14px;">
-Inserisci i tuoi ultimi 20 SD dal più vecchio
-</p>
+<p style="text-align:center">Inserisci i tuoi ultimi 20 SD dal più vecchio</p>
+<button onclick="logout()">Logout</button>
 </div>
 
 <div class="container">
@@ -70,9 +89,9 @@ Inserisci i tuoi ultimi 20 SD dal più vecchio
 
 <input id="sim" type="number" placeholder="Stableford">
 
-<button onclick="simula()">Simula</button>
-<button onclick="conferma()">✅ Conferma risultato gara</button>
-<button onclick="undo()">↩ Torna situazione precedente</button>
+<button onclick="simula()">Simula gara</button>
+<button onclick="conferma()">✅ Conferma risultato</button>
+<button onclick="undo()">↩ Torna indietro</button>
 
 <div id="out"></div>
 <div id="target"></div>
@@ -92,6 +111,11 @@ let campi=[]
 let lastState=null
 let lastSimulatedList=null
 
+// SPLASH
+setTimeout(()=>{
+document.getElementById("splash").style.display="none"
+},1000)
+
 // AUTOLOGIN
 window.addEventListener("DOMContentLoaded",()=>{
 let saved=localStorage.getItem("lastUser")
@@ -100,7 +124,7 @@ if(saved){userCorrente=saved;start()}
 
 // LOGIN
 function register(){
-if(!user.value||!pass.value)return alert("Inserisci dati")
+if(!user.value || !pass.value) return alert("Inserisci dati")
 localStorage.setItem("u_"+user.value,btoa(pass.value))
 localStorage.setItem("lastUser",user.value)
 userCorrente=user.value
@@ -109,10 +133,17 @@ start()
 
 function login(){
 if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
-userCorrente=user.value
 localStorage.setItem("lastUser",user.value)
+userCorrente=user.value
 start()
-}else alert("Errore login")
+}else{
+alert("Credenziali errate")
+}
+}
+
+function logout(){
+localStorage.removeItem("lastUser")
+location.reload()
 }
 
 // START
@@ -142,7 +173,9 @@ update()
 async function loadCampi(){
 let res=await fetch("campi.json")
 campi=await res.json()
+
 campo.innerHTML='<option value="">Campo</option>'
+
 campi.forEach(c=>{
 let o=document.createElement("option")
 o.value=c.nome
@@ -151,6 +184,7 @@ campo.appendChild(o)
 })
 }
 
+// INFO CAMPO
 campo.onchange=updateInfo
 tee.onchange=updateInfo
 
@@ -158,7 +192,7 @@ function updateInfo(){
 let c=campi.find(x=>x.nome===campo.value)
 if(!c)return
 let d=c.tee[tee.value]||c.tee.giallo
-infoCampo.innerHTML="CR: "+d.cr+" | Slope: "+d.slope
+infoCampo.innerHTML="CR "+d.cr+" | Slope "+d.slope
 }
 
 // DATI
@@ -192,10 +226,9 @@ return
 let h=calcHCP(clean)
 hcp.innerText=h.toFixed(2)
 
-// reset colori
+// reset
 for(let i=0;i<20;i++){
-let el=document.getElementById("g"+i)
-el.classList.remove("top8","warning")
+document.getElementById("g"+i).classList.remove("top8","warning")
 }
 
 // top8
@@ -216,14 +249,13 @@ save()
 draw(clean)
 }
 
-// SIMULA ✅
+// SIMULA (CORRETTA)
 function simula(){
 
 let full=getFull()
 let base=full.filter(v=>v!==null)
 if(base.length<8)return
 
-// salva stato per undo
 lastState=full.slice()
 
 let campoSel=campi.find(c=>c.nome===campo.value)
@@ -239,17 +271,14 @@ let dati = (!isNaN(cr)&&!isNaN(slope))
 let stb=parseFloat(sim.value)
 if(isNaN(stb))return
 
-// ✅ SD realistico
 let hcpAttuale=calcHCP(base)
 let score = dati.cr + (36 - stb) + hcpAttuale
 let sd = (113/dati.slope)*(score-dati.cr)
 
-// nuova lista
 let newList=full.slice()
 let removed=newList.shift()
 newList.push(sd)
 
-// salva simulazione
 lastSimulatedList=newList.slice()
 
 let clean=newList.filter(v=>v!==null)
@@ -257,75 +286,61 @@ let clean=newList.filter(v=>v!==null)
 let old=calcHCP(base)
 let next=calcHCP(clean)
 
-// stato
 let stato = next<old?"🟢 SCENDI":next>old?"🔴 SALI":"⚪ STABILE"
 
-// TARGET STB ✅
+// TARGET
 let targetSTB=null
 for(let t=25;t<=45;t++){
 let sc=dati.cr+(36-t)+hcpAttuale
 let sdTest=(113/dati.slope)*(sc-dati.cr)
 
 let tmp=base.slice()
-if(tmp.length>=20)tmp.shift()
+tmp.shift()
 tmp.push(sdTest)
 
-let h=calcHCP(tmp)
-
-if(h<old){
+if(calcHCP(tmp)<old){
 targetSTB=t
 break
 }
 }
 
-// highlight uscente
+// evidenzia uscente
 document.getElementById("g0").classList.add("warning")
 
 out.innerHTML=
 "STB "+stb+" → SD "+sd.toFixed(2)+"<br>"+
 "Esce "+(removed?removed.toFixed(2):"-")+"<br>"+
-"HCP: "+next.toFixed(2)+" ("+(next-old).toFixed(2)+")<br>"+
+"Nuovo HCP "+next.toFixed(2)+" ("+(next-old).toFixed(2)+")<br>"+
 stato
 
-target.innerHTML= targetSTB
+target.innerHTML = targetSTB
 ?"🎯 Devi fare almeno "+targetSTB
 :"🔥 Serve gara alta"
 
-// aggiorna preview
 hcp.innerText=next.toFixed(2)
 draw(clean)
 }
 
-// ✅ CONFERMA GARA
+// CONFERMA
 function conferma(){
-
-if(!lastSimulatedList)return alert("Simula prima")
-
+if(!lastSimulatedList)return
 for(let i=0;i<20;i++){
-document.getElementById("g"+i).value =
-lastSimulatedList[i]!==null?lastSimulatedList[i].toFixed(2):""
+document.getElementById("g"+i).value=
+lastSimulatedList[i]?lastSimulatedList[i].toFixed(2):""
 }
-
 save()
 update()
-
-lastSimulatedList=null
 }
 
-// ✅ UNDO
+// UNDO
 function undo(){
-
-if(!lastState)return alert("Nessuna operazione")
-
+if(!lastState)return
 for(let i=0;i<20;i++){
-document.getElementById("g"+i).value =
-lastState[i]!==null?lastState[i]:""
+document.getElementById("g"+i).value=
+lastState[i]?lastState[i]:""
 }
-
 save()
 update()
-
-lastState=null
 }
 
 // CHART
@@ -334,7 +349,6 @@ let values=[]
 for(let i=8;i<=list.length;i++){
 values.push(calcHCP(list.slice(0,i)))
 }
-
 if(window.chart)window.chart.destroy()
 
 window.chart=new Chart(grafico,{
@@ -359,8 +373,9 @@ let v=localStorage.getItem(userCorrente+"_g"+i)
 if(v)document.getElementById("g"+i).value=v
 }}
 
+// SERVICE WORKER
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js")
+navigator.serviceWorker.register("service-worker.js")
 }
 
 </script>
