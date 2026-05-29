@@ -13,10 +13,11 @@ body{font-family:Arial;background:#e8f5e9;margin:0}
 .container{background:white;margin:10px;border-radius:14px;padding:14px}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 input,select{width:100%;padding:10px;border-radius:8px;text-align:center;border:1px solid #ccc}
-button{width:100%;padding:12px;background:green;color:white;border:none;border-radius:10px}
+button{margin-top:6px;width:100%;padding:12px;background:green;color:white;border:none;border-radius:10px}
 .big{font-size:46px;text-align:center;font-weight:bold}
 .hidden{display:none}
 .top8{background:#c8e6c9}
+.warning{background:#ffcdd2}
 </style>
 </head>
 
@@ -66,8 +67,11 @@ Inserisci i tuoi ultimi 20 SD dal più vecchio
 <input id="sim" type="number" placeholder="Stableford">
 
 <button onclick="simula()">Simula</button>
+<button onclick="conferma()">✅ Conferma risultato gara</button>
+<button onclick="undo()">↩ Torna situazione precedente</button>
 
 <div id="out"></div>
+<div id="target"></div>
 
 </div>
 
@@ -81,6 +85,8 @@ Inserisci i tuoi ultimi 20 SD dal più vecchio
 
 let userCorrente=null
 let campi=[]
+let lastState=null
+let lastSimulatedList=null
 
 // AUTOLOGIN
 window.addEventListener("DOMContentLoaded",()=>{
@@ -90,10 +96,7 @@ if(saved){userCorrente=saved;start()}
 
 // LOGIN
 function register(){
-if(!user.value || !pass.value){
-alert("Inserisci user e password")
-return
-}
+if(!user.value||!pass.value)return alert("Inserisci dati")
 localStorage.setItem("u_"+user.value,btoa(pass.value))
 localStorage.setItem("lastUser",user.value)
 userCorrente=user.value
@@ -105,9 +108,7 @@ if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
 userCorrente=user.value
 localStorage.setItem("lastUser",user.value)
 start()
-}else{
-alert("Credenziali errate")
-}
+}else alert("Errore login")
 }
 
 // START
@@ -120,7 +121,6 @@ init()
 // INIT
 async function init(){
 grid.innerHTML=""
-
 for(let i=0;i<20;i++){
 let el=document.createElement("input")
 el.type="number"
@@ -129,7 +129,6 @@ el.id="g"+i
 el.oninput=update
 grid.appendChild(el)
 }
-
 await loadCampi()
 load()
 update()
@@ -139,9 +138,7 @@ update()
 async function loadCampi(){
 let res=await fetch("campi.json")
 campi=await res.json()
-
 campo.innerHTML='<option value="">Campo</option>'
-
 campi.forEach(c=>{
 let o=document.createElement("option")
 o.value=c.nome
@@ -150,7 +147,6 @@ campo.appendChild(o)
 })
 }
 
-// INFO CAMPO
 campo.onchange=updateInfo
 tee.onchange=updateInfo
 
@@ -171,14 +167,14 @@ arr.push(v!=="" ? parseFloat(v) : null)
 return arr
 }
 
-// CALCOLO HCP
+// HCP
 function calcHCP(list){
 let sorted=list.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
 return top8.reduce((a,b)=>a+b,0)/8
 }
 
-// UPDATE UI
+// UPDATE
 function update(){
 
 let full=getFull()
@@ -194,10 +190,11 @@ hcp.innerText=h.toFixed(2)
 
 // reset colori
 for(let i=0;i<20;i++){
-document.getElementById("g"+i).classList.remove("top8")
+let el=document.getElementById("g"+i)
+el.classList.remove("top8","warning")
 }
 
-// evidenzia top8
+// top8
 let sorted=clean.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
 
@@ -215,24 +212,19 @@ save()
 draw(clean)
 }
 
-// ✅ ✅ SIMULAZIONE DEFINITIVA (SEMPLICE E CORRETTA)
+// SIMULA ✅
 function simula(){
 
 let full=getFull()
 let base=full.filter(v=>v!==null)
+if(base.length<8)return
 
-if(base.length<8){
-out.innerText="Servono almeno 8 score"
-return
-}
+// salva stato per undo
+lastState=full.slice()
 
 let campoSel=campi.find(c=>c.nome===campo.value)
-if(!campoSel){
-out.innerText="Seleziona campo"
-return
-}
+if(!campoSel)return
 
-// CR e Slope
 let cr=parseFloat(crManuale.value)
 let slope=parseFloat(slopeManuale.value)
 
@@ -240,55 +232,99 @@ let dati = (!isNaN(cr)&&!isNaN(slope))
 ? {cr,slope}
 : (campoSel.tee[tee.value]||campoSel.tee.giallo)
 
-// STB → SD
 let stb=parseFloat(sim.value)
-if(isNaN(stb)){
-out.innerText="Inserisci Stableford"
-return
-}
+if(isNaN(stb))return
 
-
-// HCP attuale
-let hcpAttuale = calcHCP(base)
-
-// score stimato
+// ✅ SD realistico
+let hcpAttuale=calcHCP(base)
 let score = dati.cr + (36 - stb) + hcpAttuale
-
-// SD realistico
-let sd = (113 / dati.slope) * (score - dati.cr)
-
+let sd = (113/dati.slope)*(score-dati.cr)
 
 // nuova lista
-let newList = full.slice()
-let removed = newList.shift()
+let newList=full.slice()
+let removed=newList.shift()
 newList.push(sd)
 
-// pulita
-let clean = newList.filter(v=>v!==null)
+// salva simulazione
+lastSimulatedList=newList.slice()
 
-// HCP
-let oldHcp = calcHCP(base)
-let newHcp = calcHCP(clean)
+let clean=newList.filter(v=>v!==null)
+
+let old=calcHCP(base)
+let next=calcHCP(clean)
 
 // stato
-let stato=""
-if(newHcp < oldHcp) stato="🟢 SCENDI"
-else if(newHcp > oldHcp) stato="🔴 SALI"
-else stato="⚪ STABILE"
+let stato = next<old?"🟢 SCENDI":next>old?"🔴 SALI":"⚪ STABILE"
 
-// OUTPUT
-out.innerHTML =
-"SD nuovo: "+sd.toFixed(2)+"<br>"+
-"Esce: "+(removed ? removed.toFixed(2) : "-")+"<br>"+
-"Nuovo HCP: "+newHcp.toFixed(2)+"<br>"+
-"Δ "+(newHcp-oldHcp).toFixed(2)+"<br>"+
+// TARGET STB ✅
+let targetSTB=null
+for(let t=25;t<=45;t++){
+let sc=dati.cr+(36-t)+hcpAttuale
+let sdTest=(113/dati.slope)*(sc-dati.cr)
+
+let tmp=base.slice()
+if(tmp.length>=20)tmp.shift()
+tmp.push(sdTest)
+
+let h=calcHCP(tmp)
+
+if(h<old){
+targetSTB=t
+break
+}
+}
+
+// highlight uscente
+document.getElementById("g0").classList.add("warning")
+
+out.innerHTML=
+"STB "+stb+" → SD "+sd.toFixed(2)+"<br>"+
+"Esce "+(removed?removed.toFixed(2):"-")+"<br>"+
+"HCP: "+next.toFixed(2)+" ("+(next-old).toFixed(2)+")<br>"+
 stato
 
-hcp.innerText=newHcp.toFixed(2)
+target.innerHTML= targetSTB
+?"🎯 Devi fare almeno "+targetSTB
+:"🔥 Serve gara alta"
+
+// aggiorna preview
+hcp.innerText=next.toFixed(2)
 draw(clean)
 }
 
-// GRAFICO
+// ✅ CONFERMA GARA
+function conferma(){
+
+if(!lastSimulatedList)return alert("Simula prima")
+
+for(let i=0;i<20;i++){
+document.getElementById("g"+i).value =
+lastSimulatedList[i]!==null?lastSimulatedList[i].toFixed(2):""
+}
+
+save()
+update()
+
+lastSimulatedList=null
+}
+
+// ✅ UNDO
+function undo(){
+
+if(!lastState)return alert("Nessuna operazione")
+
+for(let i=0;i<20;i++){
+document.getElementById("g"+i).value =
+lastState[i]!==null?lastState[i]:""
+}
+
+save()
+update()
+
+lastState=null
+}
+
+// CHART
 function draw(list){
 let values=[]
 for(let i=8;i<=list.length;i++){
