@@ -127,7 +127,6 @@ grid.appendChild(el)
 }
 
 await loadCampi()
-
 load()
 update()
 }
@@ -156,11 +155,10 @@ let c=campi.find(x=>x.nome===campo.value)
 if(!c)return
 
 let d=c.tee[tee.value]||c.tee.giallo
-
 infoCampo.innerHTML="CR: "+d.cr+" | Slope: "+d.slope
 }
 
-// DATI COMPLETI
+// DATI
 function getFull(){
 let arr=[]
 for(let i=0;i<20;i++){
@@ -212,7 +210,7 @@ save()
 draw(clean)
 }
 
-// SIMULAZIONE CORRETTA ✅
+// ✅ ✅ SIMULAZIONE CORRETTA DEFINITIVA
 function simula(){
 
 let full=getFull()
@@ -223,6 +221,7 @@ if(base.length<8) return
 let campoSel=campi.find(c=>c.nome===campo.value)
 if(!campoSel) return
 
+// CR SLOPE
 let cr=parseFloat(crManuale.value)
 let slope=parseFloat(slopeManuale.value)
 
@@ -236,24 +235,26 @@ if(isNaN(stb)) return
 
 let sd = (113 / dati.slope) * (36 - stb) + (dati.cr - 72)
 
-// simulazione lista
+// ---- VECCHIO ----
+let oldSorted = base.slice().sort((a,b)=>a-b)
+let oldTop8 = oldSorted.slice(0,8)
+
+// ---- NUOVO ----
 let list = full.slice()
 let removed = list.shift()
 list.push(sd)
 
-// pulita
 let clean = list.filter(v=>v!==null)
+let newSorted = clean.slice().sort((a,b)=>a-b)
+let newTop8 = newSorted.slice(0,8)
 
-// calcolo
-let old = calcFull(base)
-let next = calcFull(clean)
-
-// controlli logici
-let removedIsTop = old.top8.includes(removed)
-let entraTop = next.top8.includes(sd)
+// controlli robusti
+let entraTop = newTop8.some(v => Math.abs(v - sd) < 0.001)
+let removedIsTop = removed !== null && oldTop8.some(v => Math.abs(v - removed) < 0.001)
 
 // stato
 let stato=""
+
 if(entraTop){
 stato="🟢 SCENDI"
 }else if(removedIsTop && !entraTop){
@@ -262,14 +263,19 @@ stato="🔴 SALI"
 stato="⚪ STABILE"
 }
 
+// HCP vero
+let oldH = oldTop8.reduce((a,b)=>a+b,0)/8
+let newH = newTop8.reduce((a,b)=>a+b,0)/8
+
 // OUTPUT
 out.innerHTML =
 "SD: "+sd.toFixed(2)+"<br>"+
 "Esce: "+(removed ? removed.toFixed(2) : "-")+"<br>"+
-"Entra nei Top 8: "+(entraTop ? "SI" : "NO")+"<br>"+
+"Nuovo HCP: "+newH.toFixed(2)+"<br>"+
+"Δ "+(newH-oldH).toFixed(2)+"<br>"+
 stato
 
-hcp.innerText=next.hcp.toFixed(2)
+hcp.innerText=newH.toFixed(2)
 draw(clean)
 }
 
