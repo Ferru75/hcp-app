@@ -9,306 +9,241 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-    font-family: Arial;
-    background:#e8f5e9;
-    margin:0;
-    padding:12px;
-}
-
-h2 { text-align:center; color:#1B5E20; }
-
-.container {
-    background:white;
-    padding:15px;
-    margin-bottom:12px;
-    border-radius:16px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-.grid {
-    display:grid;
-    grid-template-columns: repeat(5,1fr);
-    gap:6px;
-}
-
-input, select {
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    text-align:center;
-}
-
-button {
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    background:linear-gradient(45deg,#1B5E20,#43A047);
-    color:white;
-    border:none;
-    border-radius:10px;
-    font-weight:bold;
-}
-
-.big {
-    font-size:42px;
-    text-align:center;
-    font-weight:bold;
-    color:#1B5E20;
-}
-
-.hidden { display:none; }
-
-.banner {
-    background:#1B5E20;
-    color:white;
-    padding:10px;
-    border-radius:10px;
-    text-align:center;
-    font-weight:bold;
-}
+body{font-family:Arial;background:#e8f5e9;padding:12px}
+.container{background:white;padding:15px;margin-bottom:12px;border-radius:14px}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;text-align:center}
+button{width:100%;padding:10px;margin-top:10px;background:green;color:white;border:none}
+.big{font-size:40px;text-align:center;font-weight:bold}
 </style>
 </head>
 
 <body>
 
 <div id="loginBox" class="container">
-    <h2>Login</h2>
-    <input id="user" placeholder="Nome utente">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Accedi</button>
-    <button onclick="register()">Crea profilo</button>
+<h2>Login</h2>
+<input id="user" placeholder="utente">
+<input id="pass" type="password" placeholder="password">
+<button onclick="login()">Login</button>
+<button onclick="register()">Crea</button>
 </div>
 
-<div id="app" class="hidden">
+<div id="app" style="display:none">
 
 <h2>⛳ HCP PRO</h2>
 
 <div class="container">
-    <button onclick="logout()">Logout</button>
+<div class="grid" id="grid"></div>
 </div>
 
 <div class="container">
-    <b>Score Differenziali</b>
-    <div class="grid" id="grid"></div>
+<div class="big" id="hcp">--</div>
 </div>
 
 <div class="container">
-    <div>HCP</div>
-    <div class="big" id="hcp">--</div>
+<h3>Prossima gara</h3>
+
+<select id="campo"></select>
+
+<select id="tee">
+<option value="">TEE</option>
+<option value="giallo">Giallo</option>
+<option value="bianco">Bianco</option>
+<option value="rosso">Rosso</option>
+</select>
+
+<input id="sim" placeholder="Stableford" type="number">
+
+<button onclick="simulaPro()">Simula</button>
+
+<div id="simOut"></div>
 </div>
 
 <div class="container">
-    <div class="banner">🏌️ PROSSIMA GARA</div>
-
-    <select id="campo"></select>
-
-    <select id="tee">
-        <option value="">Seleziona Tee</option>
-        <option value="bianco">Bianco</option>
-        <option value="giallo">Giallo</option>
-        <option value="rosso">Rosso</option>
-    </select>
-
-    <div id="infoCampo"></div>
-
-    <input id="sim" type="number" placeholder="Stableford">
-
-    <button onclick="simulaPro()">Simula gara</button>
-
-    <div id="simOut"></div>
-</div>
-
-<div class="container">
-    <canvas id="grafico"></canvas>
+<canvas id="grafico"></canvas>
 </div>
 
 </div>
 
 <script>
 
-// ===== DATABASE CAMPI =====
-const campi = {
-
-"Arzaga Golf": {bianco:{cr:73.5,slope:141},giallo:{cr:71.8,slope:135},rosso:{cr:73.2,slope:133}},
-"Albenza Bergamo": {bianco:{cr:71.5,slope:130},giallo:{cr:70.0,slope:127},rosso:{cr:71.8,slope:125}},
-"Biella Golf": {bianco:{cr:72.5,slope:134},giallo:{cr:71.0,slope:130},rosso:{cr:72.0,slope:128}},
-"Bogogno Bonora": {bianco:{cr:73.8,slope:141},giallo:{cr:72.0,slope:137},rosso:{cr:73.0,slope:135}},
-"Bogogno Del Conte": {bianco:{cr:74.2,slope:143},giallo:{cr:73.0,slope:140},rosso:{cr:74.0,slope:138}},
-"Brianza Country Club": {bianco:{cr:72.0,slope:132},giallo:{cr:70.5,slope:128},rosso:{cr:71.8,slope:126}},
-"Carimate Golf": {bianco:{cr:73.0,slope:139},giallo:{cr:72.4,slope:136},rosso:{cr:73.5,slope:134}},
-"Castelconturbia": {bianco:{cr:72.9,slope:138},giallo:{cr:71.0,slope:129},rosso:{cr:72.0,slope:127}},
-"Castello Tolcinasco": {bianco:{cr:73.0,slope:135},giallo:{cr:71.0,slope:130},rosso:{cr:72.0,slope:128}},
-"Cherasco Golf": {bianco:{cr:72.0,slope:131},giallo:{cr:70.8,slope:128},rosso:{cr:71.5,slope:126}},
-"Chervò San Vigilio": {bianco:{cr:73.5,slope:140},giallo:{cr:72.0,slope:138},rosso:{cr:73.0,slope:136}},
-"Circolo Golf Torino Blu": {bianco:{cr:72.5,slope:134},giallo:{cr:71.0,slope:128},rosso:{cr:72.0,slope:126}},
-"Circolo Golf Torino Giallo": {bianco:{cr:73.0,slope:140},giallo:{cr:72.0,slope:138},rosso:{cr:73.0,slope:136}},
-"Des Iles Borromees": {bianco:{cr:71.5,slope:131},giallo:{cr:70.0,slope:127},rosso:{cr:71.5,slope:125}},
-"Franciacorta Golf": {bianco:{cr:72.5,slope:132},giallo:{cr:71.0,slope:128},rosso:{cr:72.0,slope:126}},
-"Golf Club Milano": {bianco:{cr:74.0,slope:140},giallo:{cr:72.0,slope:134},rosso:{cr:73.5,slope:132}},
-"Golf Club Monticello": {bianco:{cr:73.2,slope:138},giallo:{cr:71.7,slope:130},rosso:{cr:72.8,slope:128}},
-"Golf Club Varese": {bianco:{cr:73.0,slope:136},giallo:{cr:72.0,slope:134},rosso:{cr:73.0,slope:132}},
-"Le Rovedine": {bianco:{cr:70.5,slope:125},giallo:{cr:69.5,slope:122},rosso:{cr:70.5,slope:121}},
-"Molinetto Country Club": {bianco:{cr:72.5,slope:135},giallo:{cr:71.0,slope:131},rosso:{cr:72.0,slope:129}},
-"Royal Park I Roveri": {bianco:{cr:73.8,slope:140},giallo:{cr:72.1,slope:134},rosso:{cr:73.2,slope:132}},
-"Stresa Alpino": {bianco:{cr:70.5,slope:128},giallo:{cr:69.8,slope:125},rosso:{cr:70.5,slope:123}},
-"Villa Paradiso": {bianco:{cr:72.5,slope:137},giallo:{cr:71.0,slope:132},rosso:{cr:72.0,slope:130}}
-
-}
-
-// ===== LOGIN =====
 let currentUser=null
+let campiDB=[]
 
-window.onload=function(){
-    let saved=localStorage.getItem("lastUser")
-    if(saved){currentUser=saved;startApp()}
+// ✅ AUTO LOGIN
+window.onload=()=>{
+let u=localStorage.getItem("lastUser")
+if(u){currentUser=u;startApp()}
 }
 
+// ✅ LOGIN
 function register(){
-    localStorage.setItem("user_"+user.value,btoa(pass.value))
-    localStorage.setItem("lastUser",user.value)
+localStorage.setItem("u_"+user.value,btoa(pass.value))
+localStorage.setItem("lastUser",user.value)
+currentUser=user.value
+startApp()
 }
 
 function login(){
-    if(localStorage.getItem("user_"+user.value)===btoa(pass.value)){
-        currentUser=user.value
-        localStorage.setItem("lastUser",user.value)
-        startApp()
-    }
+if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
+currentUser=user.value
+localStorage.setItem("lastUser",user.value)
+startApp()
+}
 }
 
-function logout(){
-    localStorage.removeItem("lastUser")
-    location.reload()
-}
-
+// ✅ START APP
 function startApp(){
-    loginBox.classList.add("hidden")
-    app.classList.remove("hidden")
-    init()
+loginBox.style.display="none"
+app.style.display="block"
+init()
 }
 
-function key(n){return currentUser+"_"+n}
+// ✅ LOAD DB
+async function loadCampi(){
+let res=await fetch("campi.json")
+campiDB=await res.json()
+
+campo.innerHTML='<option>Seleziona campo</option>'
+
+campiDB.sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(c=>{
+let o=document.createElement("option")
+o.value=c.nome
+o.textContent=c.nome
+campo.appendChild(o)
+})
+}
 
 // ===== INIT =====
 function init(){
+grid.innerHTML=""
 
-    // grid
-    for(let i=0;i<20;i++){
-        let el=document.createElement("input")
-        el.id="g"+i
-        el.type="number"
-        el.step="0.1"
-        el.oninput=aggiorna
-        grid.appendChild(el)
-    }
+for(let i=0;i<20;i++){
+let el=document.createElement("input")
+el.type="number"
+el.step="0.1"
+el.id="g"+i
+el.oninput=aggiorna
+grid.appendChild(el)
+}
 
-    // campi
-    campo.innerHTML='<option value="">Seleziona campo</option>'
-    Object.keys(campi).sort().forEach(c=>{
-        let o=document.createElement("option")
-        o.value=c
-        o.textContent=c
-        campo.appendChild(o)
-    })
-
-    load()
-    aggiorna()
+load()
+loadCampi()
+aggiorna()
 }
 
 // ===== DATA =====
 function getData(){
-    let a=[]
-    for(let i=0;i<20;i++){
-        let v=document.getElementById("g"+i).value
-        if(v)a.push(parseFloat(v))
-    }
-    return a
+let a=[]
+for(let i=0;i<20;i++){
+let v=document.getElementById("g"+i).value
+if(v)a.push(parseFloat(v))
+}
+return a
 }
 
 // ===== CALCOLO =====
 function calc(l){
-    if(l.length<8)return null
-    let s=l.slice().sort((a,b)=>a-b).slice(0,8)
-    return s.reduce((a,b)=>a+b,0)/8
+if(l.length<8)return null
+let s=l.slice().sort((a,b)=>a-b).slice(0,8)
+return s.reduce((a,b)=>a+b,0)/8
 }
 
 // ===== UPDATE =====
 function aggiorna(){
-    let list=getData()
-    if(list.length<8){hcp.innerText="--";return}
+let list=getData()
 
-    let val=calc(list)
-    hcp.innerText=val.toFixed(2)
+if(list.length<8){hcp.innerText="--";return}
 
-    save()
-    aggiornaGrafico(list)
+let val=calc(list)
+hcp.innerText=val.toFixed(2)
+
+save()
+drawGraph(list)
 }
 
 // ===== GRAFICO =====
-function aggiornaGrafico(list){
-    let arr=[]
-    for(let i=8;i<=list.length;i++){
-        arr.push(calc(list.slice(0,i)))
-    }
+function drawGraph(list){
 
-    if(window.chart)chart.destroy()
+let values=[]
+let temp=[]
 
-    window.chart=new Chart(grafico,{
-        type:'line',
-        data:{labels:arr.map((_,i)=>i+8),
-        datasets:[{data:arr,borderColor:"green"}]}
-    })
+for(let i=0;i<list.length;i++){
+temp.push(list[i])
+let h=calc(temp)
+if(h!==null)values.push(h)
 }
 
-// ===== SAVE =====
+if(window.chart)chart.destroy()
+
+window.chart=new Chart(grafico,{
+type:'line',
+data:{
+labels:values.map((_,i)=>i+1),
+datasets:[{data:values,borderColor:'green'}]
+}
+})
+}
+
+// ===== SIMULAZIONE CORRETTA =====
+function simulaPro(){
+
+let base=getData()
+if(base.length<8){
+simOut.innerText="Servono almeno 8 score"
+return
+}
+
+let campoSel=campiDB.find(c=>c.nome===campo.value)
+if(!campoSel){
+simOut.innerText="Seleziona campo"
+return
+}
+
+let teeSel=tee.value
+let dati=campoSel.tee[teeSel]||campoSel.tee.giallo
+
+let stb=parseFloat(sim.value)
+if(isNaN(stb)){
+simOut.innerText="Inserisci STB"
+return
+}
+
+// ✅ SD CORRETTO
+let sd=(dati.cr-72)+((113/dati.slope)*(36-stb))
+
+let newList=base.slice()
+
+if(newList.length>=20)newList.shift()
+
+newList.push(sd)
+
+// ✅ nuovo HCP
+let oldHcp=calc(base)
+let newHcp=calc(newList)
+
+simOut.innerHTML=
+"SD: "+sd.toFixed(2)+"<br>"+
+"HCP: "+newHcp.toFixed(2)+"<br>"+
+"Δ "+(newHcp-oldHcp).toFixed(2)
+
+hcp.innerText=newHcp.toFixed(2)
+
+drawGraph(newList)
+}
+
+// ===== STORAGE =====
 function save(){
 for(let i=0;i<20;i++){
-localStorage.setItem(key("g"+i),document.getElementById("g"+i).value)
+localStorage.setItem(currentUser+"_g"+i,
+document.getElementById("g"+i).value)
 }}
 
 function load(){
 for(let i=0;i<20;i++){
-let v=localStorage.getItem(key("g"+i))
+let v=localStorage.getItem(currentUser+"_g"+i)
 if(v)document.getElementById("g"+i).value=v
 }}
-
-// ===== INFO CAMPO =====
-campo.onchange=tee.onchange=function(){
-if(!campo.value||!tee.value){infoCampo.innerText="";return}
-let d=campi[campo.value][tee.value]
-infoCampo.innerText="CR "+d.cr+" | Slope "+d.slope
-}
-
-// ===== SIMULAZIONE =====
-function simulaPro(){
-
-let base=getData()
-if(base.length<8)return
-
-let d=campi[campo.value][tee.value]
-
-let stb=parseFloat(sim.value)
-if(isNaN(stb))return
-
-let sd=(d.cr-72)+((113/d.slope)*(36-stb))
-
-let newList=base.slice()
-if(newList.length>=20)newList.shift()
-newList.push(sd)
-
-let newHcp=calc(newList)
-let delta=newHcp-calc(base)
-
-simOut.innerHTML=
-"Diff: "+sd.toFixed(2)+"<br>"+
-"HCP: "+newHcp.toFixed(2)+"<br>"+
-"Δ "+delta.toFixed(2)
-
-hcp.innerText=newHcp.toFixed(2)
-aggiornaGrafico(newList)
-}
 
 </script>
 
