@@ -14,32 +14,81 @@
 <style>
 body{font-family:Arial;background:#e8f5e9;margin:0}
 .container{background:white;margin:10px;border-radius:14px;padding:14px}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:6px;
+}
 
 input,select{
 width:100%;
-padding:10px;
+padding:6px;
 border-radius:8px;
 text-align:center;
 border:1px solid #ccc
 }
 
 button{
-margin-top:6px;
-width:100%;
-padding:12px;
+margin-top:4px;
+padding:6px;
 background:green;
 color:white;
 border:none;
-border-radius:10px
+border-radius:8px;
 }
 
+/* SD buttons */
+.grid button{
+flex:1;
+font-size:12px;
+}
+
+.sdBox{
+display:flex;
+gap:2px;
+}
+
+/* Stableford PRO */
+#simBox{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:15px;
+margin:10px 0;
+}
+
+#simBox button{
+width:60px;
+height:60px;
+font-size:28px;
+border-radius:50%;
+background:#2e7d32;
+color:white;
+border:none;
+}
+
+#sim{
+font-size:36px;
+font-weight:bold;
+min-width:90px;
+text-align:center;
+background:#ff9800;
+color:white;
+padding:12px;
+border-radius:12px;
+}
+
+#sim.low{ background:#b71c1c; }
+#sim.mid{ background:#ff9800; }
+#sim.high{ background:#2e7d32; }
+
+/* graph */
 .big{font-size:46px;text-align:center;font-weight:bold}
-.hidden{display:none}
 .top8{background:#c8e6c9}
 .warning{background:#ffcdd2}
 
-/* SPLASH */
+/* splash */
 #splash{
 position:fixed;
 top:0;
@@ -54,23 +103,6 @@ justify-content:center;
 font-size:32px;
 z-index:9999;
 }
-
-/* ✅ STABLEFORD SUPER VISIBILE */
-#sim {
-font-size:24px;
-font-weight:bold;
-background:#fff3cd;
-border:2px solid #ff9800;
-}
-
-/* ✅ BOTTONE DINAMICO */
-#simBtn.valid { background:green; }
-#simBtn.invalid { background:#b71c1c; }
-
-/* ✅ RISULTATO COLORATO */
-#out.good { color:green; font-weight:bold; }
-#out.bad { color:red; font-weight:bold; }
-#out.neutral { color:gray; }
 </style>
 </head>
 
@@ -121,9 +153,14 @@ border:2px solid #ff9800;
 
 <div id="infoCampo"></div>
 
-<input id="sim" type="number" placeholder="🎯 Inserisci Stableford">
+<!-- ✅ STABLEFORD PRO -->
+<div id="simBox">
+  <button onclick="changeSTB(-1)">−</button>
+  <div id="sim">36</div>
+  <button onclick="changeSTB(1)">+</button>
+</div>
 
-<button id="simBtn" class="invalid" onclick="simula()">Simula gara</button>
+<button onclick="simula()">Simula gara</button>
 <button onclick="conferma()">✅ Conferma risultato</button>
 <button onclick="undo()">↩ Torna indietro</button>
 
@@ -145,19 +182,7 @@ let campi=[]
 let lastState=null
 let lastSimulatedList=null
 
-// ✅ CONTROLLO LIVE STB
-sim.oninput = updateSimBtn;
-
-function updateSimBtn(){
-let val = parseFloat(sim.value)
-if(!isNaN(val) && val >= 1){
-simBtn.classList.remove("invalid")
-simBtn.classList.add("valid")
-}else{
-simBtn.classList.remove("valid")
-simBtn.classList.add("invalid")
-}
-}
+let stbValue = 36
 
 // SPLASH
 setTimeout(()=>{
@@ -204,13 +229,19 @@ init()
 async function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
-let el=document.createElement("input")
-el.type="number"
-el.step="0.1"
-el.id="g"+i
-el.oninput=update
-grid.appendChild(el)
+
+let box=document.createElement("div")
+box.className="sdBox"
+
+box.innerHTML=`
+<button onclick="changeSD(${i},-0.1)">−</button>
+<input id="g${i}" type="number" step="0.1" oninput="update()">
+<button onclick="changeSD(${i},0.1)">+</button>
+`
+
+grid.appendChild(box)
 }
+
 await loadCampi()
 load()
 update()
@@ -222,7 +253,6 @@ let res=await fetch("campi.json")
 campi=await res.json()
 
 campo.innerHTML='<option value="">Campo</option>'
-
 campi.forEach(c=>{
 let o=document.createElement("option")
 o.value=c.nome
@@ -240,6 +270,32 @@ let c=campi.find(x=>x.nome===campo.value)
 if(!c)return
 let d=c.tee[tee.value]||c.tee.giallo
 infoCampo.innerHTML="CR "+d.cr+" | Slope "+d.slope
+}
+
+// SD CHANGE
+function changeSD(i,delta){
+let el=document.getElementById("g"+i)
+let v=parseFloat(el.value)
+if(isNaN(v))v=0
+v+=delta
+if(v<0)v=0
+if(v>60)v=60
+el.value=v.toFixed(1)
+update()
+}
+
+// STB CONTROL
+function changeSTB(delta){
+stbValue+=delta
+if(stbValue<20)stbValue=20
+if(stbValue>45)stbValue=45
+
+sim.innerText=stbValue
+
+sim.classList.remove("low","mid","high")
+if(stbValue<34)sim.classList.add("low")
+else if(stbValue<=37)sim.classList.add("mid")
+else sim.classList.add("high")
 }
 
 // DATI
@@ -261,6 +317,7 @@ return top8.reduce((a,b)=>a+b,0)/8
 
 // UPDATE
 function update(){
+
 let full=getFull()
 let clean=full.filter(v=>v!==null)
 
@@ -272,9 +329,7 @@ return
 let h=calcHCP(clean)
 hcp.innerText=h.toFixed(2)
 
-for(let i=0;i<20;i++){
-document.getElementById("g"+i).classList.remove("top8","warning")
-}
+document.querySelectorAll("input").forEach(i=>i.classList.remove("top8"))
 
 let sorted=clean.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
@@ -293,31 +348,29 @@ save()
 draw(full)
 }
 
-// ✅ GRAFICO FIX
+// GRAFICO
 function draw(list){
 
-let clean = list.filter(v => v !== null)
-let sorted = clean.slice().sort((a,b)=>a-b)
-let top8 = sorted.slice(0,8)
+let clean=list.filter(v=>v!==null)
+let sorted=clean.slice().sort((a,b)=>a-b)
+let top8=sorted.slice(0,8)
 
-let result = []
-
+let result=[]
 list.forEach(v=>{
 if(top8.includes(v)){
 result.push(v)
-let idx = top8.indexOf(v)
-top8.splice(idx,1)
+top8.splice(top8.indexOf(v),1)
 }
 })
 
-if(window.chart) window.chart.destroy()
+if(window.chart)window.chart.destroy()
 
-window.chart = new Chart(grafico,{
+window.chart=new Chart(grafico,{
 type:'line',
 data:{
-labels: result.map((_,i)=>i+1),
+labels:result.map((_,i)=>i+1),
 datasets:[{
-data: result,
+data:result,
 borderColor:"green",
 backgroundColor:"rgba(0,128,0,0.2)",
 tension:0.3
@@ -328,10 +381,9 @@ plugins:{legend:{display:false}},
 scales:{y:{reverse:true}}
 }
 })
-
 }
 
-// ✅ SIMULA (con output colorato)
+// SIMULA
 function simula(){
 
 let full=getFull()
@@ -346,35 +398,26 @@ if(!campoSel)return
 let cr=parseFloat(crManuale.value)
 let slope=parseFloat(slopeManuale.value)
 
-let dati = (!isNaN(cr)&&!isNaN(slope))
-? {cr,slope}
-: (campoSel.tee[tee.value]||campoSel.tee.giallo)
+let dati=(!isNaN(cr)&&!isNaN(slope))
+?{cr,slope}
+:(campoSel.tee[tee.value]||campoSel.tee.giallo)
 
-let stb=parseFloat(sim.value)
-if(isNaN(stb))return
+let stb=stbValue
 
 let old=calcHCP(base)
 
-let score = dati.cr + (36 - stb) + old
-let sd = (113/dati.slope)*(score-dati.cr)
+let score=dati.cr+(36-stb)+old
+let sd=(113/dati.slope)*(score-dati.cr)
 
 let newList=full.slice()
 newList.shift()
 newList.push(sd)
 
+lastSimulatedList=newList
+
 let next=calcHCP(newList.filter(v=>v!==null))
 
-let stato = next<old ? "good" : next>old ? "bad" : "neutral"
-
-out.classList.remove("good","bad","neutral")
-out.classList.add(stato)
-
-out.innerHTML =
-"STB "+stb+" → SD "+sd.toFixed(2)+"<br>" +
-"Nuovo HCP "+next.toFixed(2)
-
 hcp.innerText=next.toFixed(2)
-
 draw(newList)
 }
 
@@ -418,3 +461,4 @@ navigator.serviceWorker.register("service-worker.js")
 
 </body>
 </html>
+``
