@@ -12,50 +12,52 @@
 body{font-family:Arial;background:#e8f5e9;margin:0}
 .container{background:white;margin:10px;border-radius:14px;padding:14px}
 
-/* GRID */
+/* layout principale */
+.mainRow{
+display:flex;
+gap:10px;
+}
+
+/* GRID SD */
 .grid{
+flex:1;
 display:grid;
 grid-template-columns:repeat(5,1fr);
 gap:6px;
 }
 
-/* SD INPUT */
+/* SD piccoli */
 .grid input{
-font-size:14px;
-padding:6px;
-height:35px;
+font-size:13px;
+padding:4px;
+height:32px;
 text-align:center;
-border-radius:8px;
+border-radius:6px;
 border:1px solid #ccc;
 }
 
-/* selezione attiva */
+/* selezione */
 .selectedSD{
 border:2px solid #ff9800;
 background:#fff3cd;
 }
 
-/* FRECCE LATERALI */
-.sdBox{
-display:flex;
-}
-
-.sdArrows{
+/* CONTROLLO DESTRA */
+#sdController{
 display:flex;
 flex-direction:column;
-margin-left:2px;
+justify-content:center;
+gap:10px;
 }
 
-.sdArrows button{
-width:28px;
-height:18px;
-font-size:12px;
-padding:0;
-margin:1px 0;
+#sdController button{
+width:45px;
+height:45px;
+font-size:20px;
+border-radius:8px;
 background:#2e7d32;
 color:white;
 border:none;
-border-radius:4px;
 }
 
 /* STABLEFORD */
@@ -68,8 +70,8 @@ margin:10px 0;
 }
 
 #simBox button{
-width:50px;
-height:50px;
+width:45px;
+height:45px;
 font-size:22px;
 border-radius:50%;
 background:#2e7d32;
@@ -78,21 +80,15 @@ border:none;
 }
 
 #sim{
-font-size:28px;
+font-size:24px;
 font-weight:bold;
-min-width:70px;
-text-align:center;
 background:#ff9800;
 color:white;
-padding:10px;
-border-radius:10px;
+padding:8px;
+border-radius:8px;
 }
 
-#sim.low{background:#b71c1c;}
-#sim.mid{background:#ff9800;}
-#sim.high{background:#2e7d32;}
-
-.big{font-size:46px;text-align:center;font-weight:bold}
+.big{font-size:40px;text-align:center;font-weight:bold}
 .top8{background:#c8e6c9}
 
 button{
@@ -109,14 +105,18 @@ border-radius:10px
 
 <body>
 
+<!-- LOGIN -->
 <div id="loginBox" class="container">
 <h2 style="text-align:center;">HCP PRO</h2>
+
 <input id="user" placeholder="Username">
 <input id="pass" type="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
 <button onclick="register()">Crea account</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
 
 <div class="container" style="position:relative">
@@ -133,15 +133,28 @@ top:10px;
 right:10px;
 padding:4px 8px;
 font-size:11px;
-background:#2e7d32;
-width:auto;">
+width:auto;
+background:#2e7d32;">
 Logout
 </button>
 
 </div>
 
 <div class="container">
+
+<div class="mainRow">
+
+<!-- GRID -->
 <div class="grid" id="grid"></div>
+
+<!-- CONTROLLER -->
+<div id="sdController">
+<button onclick="changeSelectedSD(-0.1)">−</button>
+<button onclick="changeSelectedSD(0.1)">+</button>
+</div>
+
+</div>
+
 </div>
 
 <div class="container">
@@ -152,7 +165,7 @@ Logout
 
 <div id="simBox">
 <button onclick="changeSTB(-1)">−</button>
-<div id="sim" class="mid">36</div>
+<div id="sim">36</div>
 <button onclick="changeSTB(1)">+</button>
 </div>
 
@@ -210,19 +223,15 @@ function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
 
-let box=document.createElement("div")
-box.className="sdBox"
+let el=document.createElement("input")
+el.type="number"
+el.step="0.1"
+el.id="g"+i
 
-box.innerHTML=`
-<input id="g${i}" type="number" step="0.1" onclick="selectSD(${i})" oninput="update()">
+el.onclick=()=>selectSD(i)
+el.oninput=update
 
-<div class="sdArrows">
-<button onclick="changeSelectedSD(-0.1)">−</button>
-<button onclick="changeSelectedSD(0.1)">+</button>
-</div>
-`
-
-grid.appendChild(box)
+grid.appendChild(el)
 }
 load()
 update()
@@ -239,14 +248,14 @@ el.classList.remove("selectedSD")
 document.getElementById("g"+i).classList.add("selectedSD")
 }
 
-// CAMBIO
+// MODIFICA
 function changeSelectedSD(delta){
 
 if(selectedIndex===null)return
 
 let el=document.getElementById("g"+selectedIndex)
-let val=parseFloat(el.value)
 
+let val=parseFloat(el.value)
 if(isNaN(val)) val=0
 
 val+=delta
@@ -266,12 +275,6 @@ if(stbValue<20)stbValue=20
 if(stbValue>45)stbValue=45
 
 sim.innerText=stbValue
-
-sim.classList.remove("low","mid","high")
-
-if(stbValue<34)sim.classList.add("low")
-else if(stbValue<=37)sim.classList.add("mid")
-else sim.classList.add("high")
 }
 
 // DATI
@@ -347,14 +350,13 @@ data:{
 labels:result.map((_,i)=>i+1),
 datasets:[{
 data:result,
-borderColor:"green",
-backgroundColor:"rgba(0,128,0,0.2)"
+borderColor:"green"
 }]
 }
 })
 }
 
-// SIMULA (semplice)
+// SIMULA
 function simula(){
 
 let full=getFull()
@@ -376,27 +378,6 @@ let next=calcHCP(newList.filter(v=>v!==null))
 
 hcp.innerText=next.toFixed(2)
 draw(newList)
-}
-
-// CONFIRM / UNDO
-function conferma(){
-if(!lastSimulatedList)return
-for(let i=0;i<20;i++){
-document.getElementById("g"+i).value=
-lastSimulatedList[i]?lastSimulatedList[i].toFixed(2):""
-}
-save()
-update()
-}
-
-function undo(){
-if(!lastState)return
-for(let i=0;i<20;i++){
-document.getElementById("g"+i).value=
-lastState[i]?lastState[i]:""
-}
-save()
-update()
 }
 
 // STORAGE
