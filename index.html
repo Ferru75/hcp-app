@@ -143,9 +143,17 @@ Tap = −0.1 • Tieni premuto = + veloce
 
 <!-- ✅ CAMPO + TEE -->
 
-div class="selectorRow">
+
+<div class="container">
+
+<div class="selectorRow">
 <select id="campo"></select>
-<select id="tee"></select>
+
+<select id="tee">
+<option value="giallo">Giallo</option>
+<option value="bianco">Bianco</option>
+<option value="rosso">Rosso</option>
+</select>
 </div>
 
 <div class="inputRow">
@@ -153,17 +161,10 @@ div class="selectorRow">
 <input id="slopeManuale" type="number" placeholder="Slope override">
 </div>
 
-<option value="giallo">Giallo</option>
-<option value="bianco">Bianco</option>
-<option value="rosso">Rosso</option>
-</select>
-
-<input id="crManuale" type="number" step="0.1" placeholder="CR override">
-<input id="slopeManuale" type="number" placeholder="Slope override">
-
 <div id="infoCampo"></div>
 
 </div>
+
 
 <!-- ✅ STB -->
   
@@ -385,7 +386,7 @@ sim.innerText = stbValue
 updateSimColor()
 }
 
-unction updateSimColor(){
+function updateSimColor(){
 
 let base = data.filter(v=>v!==null)
 if(base.length < 8) return
