@@ -32,7 +32,7 @@ font-weight:bold;
 margin:8px 0;
 }
 
-/* logout */
+/* ✅ logout FIX */
 .logoutBtn{
 position:absolute;
 top:6px;
@@ -40,16 +40,20 @@ right:6px;
 padding:6px 10px;
 font-size:12px;
 border-radius:8px;
+background:#2e7d32;
+color:white;
+border:none;
+width:auto;
 }
 
-/* grid PRO */
+/* grid */
 .grid{
 display:grid;
 grid-template-columns:repeat(4,1fr);
 gap:4px;
 }
 
-/* ✅ BOTTONI AL POSTO INPUT */
+/* bottoni SD */
 .sdBtn{
 height:40px;
 border-radius:8px;
@@ -70,7 +74,7 @@ transform:scale(0.92);
 background:#c8e6c9;
 }
 
-/* HCP */
+/* hcp */
 .big{
 font-size:48px;
 text-align:center;
@@ -127,13 +131,10 @@ text-align:center;
 </div>
 
 <div class="container">
-
 <p class="desc">
-Inserisci i tuoi ultimi 20 SD. Tap = +0.1 • Tieni premuto = −0.1
+Tap = −0.1 • Tieni premuto = +0.1 (accelerato)
 </p>
-
 <div class="grid" id="grid"></div>
-
 </div>
 
 <div class="container">
@@ -163,7 +164,13 @@ let data = new Array(20).fill(null)
 let stbValue = 36
 let lastState = null
 
-/* ✅ crea bottoni */
+function vibrate(type){
+if(!navigator.vibrate) return
+if(type==="tap") navigator.vibrate(10)
+if(type==="hold") navigator.vibrate(5)
+}
+
+/* ✅ INIT PRO */
 function init(){
 grid.innerHTML=""
 
@@ -173,18 +180,47 @@ let el=document.createElement("div")
 el.className="sdBtn"
 el.innerText="--"
 
-/* TAP (+0.1) */
+/* TAP = -0.1 */
 el.onclick=()=>{
-vibrate()
-changeSD(i,0.1)
+changeSD(i,-0.1)
+vibrate("tap")
 }
 
-/* LONG PRESS (-0.1) */
-let timer
-el.onmousedown=()=>timer=setTimeout(()=>changeSD(i,-0.1),400)
-el.onmouseup=()=>clearTimeout(timer)
-el.ontouchstart=()=>timer=setTimeout(()=>changeSD(i,-0.1),400)
-el.ontouchend=()=>clearTimeout(timer)
+/* HOLD = +0.1 accelerato */
+let interval=null
+let speed=150
+
+function startHold(){
+speed=150
+interval=setInterval(()=>{
+changeSD(i,0.1)
+vibrate("hold")
+
+/* ✅ accelerazione */
+if(speed>50){
+speed-=10
+clearInterval(interval)
+interval=setInterval(()=>{
+changeSD(i,0.1)
+vibrate("hold")
+},speed)
+}
+
+},speed)
+}
+
+function stopHold(){
+clearInterval(interval)
+}
+
+/* mouse */
+el.onmousedown=startHold
+el.onmouseup=stopHold
+el.onmouseleave=stopHold
+
+/* mobile */
+el.ontouchstart=startHold
+el.ontouchend=stopHold
 
 grid.appendChild(el)
 }
@@ -192,38 +228,32 @@ grid.appendChild(el)
 
 init()
 
-function vibrate(){
-if(navigator.vibrate) navigator.vibrate(10)
-}
-
 function changeSD(i,delta){
-
 if(data[i]===null) data[i]=0
 
 data[i]+=delta
+data[i]=Math.round(data[i]*10)/10
 data[i]=Math.max(0,Math.min(60,data[i]))
 
 update()
 }
 
-/* hcp */
+/* HCP */
 function calcHCP(list){
 let s=list.slice().sort((a,b)=>a-b).slice(0,8)
 return s.reduce((a,b)=>a+b,0)/8
 }
 
-/* top8 */
+/* top8 cronologico */
 function getTop8(list){
 let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
 let res=[]
-
 list.forEach(v=>{
 if(sorted.includes(v)){
 res.push(v)
 sorted.splice(sorted.indexOf(v),1)
 }
 })
-
 return res
 }
 
@@ -237,7 +267,7 @@ hcp.innerText="--"
 hcp.innerText=calcHCP(clean).toFixed(2)
 }
 
-/* aggiorna UI */
+/* UI */
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
 el.innerText = data[i]?.toFixed(1) ?? "--"
 el.classList.remove("top8")
@@ -249,7 +279,6 @@ sorted.forEach(val=>{
 for(let i=0;i<data.length;i++){
 if(data[i]===val){
 document.getElementsByClassName("sdBtn")[i].classList.add("top8")
-data[i]=data[i] /* evita duplicati */
 break
 }
 }
@@ -262,14 +291,17 @@ updateSimColor()
 /* grafico */
 function draw(d){
 if(d.length===0) return
-
 if(window.chart)window.chart.destroy()
 
 window.chart=new Chart(grafico,{
 type:'line',
 data:{
 labels:d.map((_,i)=>i+1),
-datasets:[{data:d,borderColor:"green"}]
+datasets:[{
+data:d,
+borderColor:"green",
+fill:false
+}]
 }
 })
 }
@@ -284,7 +316,6 @@ updateSimColor()
 
 /* simula */
 function simula(){
-
 let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
 
@@ -305,19 +336,16 @@ data=[...lastState]
 update()
 }
 
-/* conferma = già fatto */
 function conferma(){
 lastState=null
 }
 
 /* colori */
 function updateSimColor(){
-
 let clean=data.filter(v=>v!==null)
 if(clean.length<8) return
 
 let old=calcHCP(clean)
-
 let sd=(36-stbValue)+old
 
 let newList=[...data]
@@ -334,3 +362,4 @@ else sim.style.background="#2e7d32"
 
 </body>
 </html>
+``
