@@ -30,22 +30,19 @@ padding:6px;
 /* titolo */
 .title{
 text-align:center;
-font-size:32px;
+font-size:34px;
 font-weight:bold;
 margin:8px 0;
 }
 
-/* logout FIX */
+/* logout */
 .logoutBtn{
 position:absolute;
-top:8px;
-right:8px;
+top:6px;
+right:6px;
 padding:6px 10px;
 font-size:12px;
 border-radius:8px;
-background:#2e7d32;
-color:white;
-border:none;
 width:auto;
 }
 
@@ -56,27 +53,27 @@ gap:4px;
 align-items:center;
 }
 
-/* grid */
+/* ✅ FIX: 4 colonne REALI */
 .grid{
 flex:1;
 display:grid;
-grid-template-columns:repeat(4, 1fr);
+grid-template-columns:repeat(4, minmax(0,1fr));
 gap:2px;
 }
 
-/* sd */
+/* SD */
 .grid input{
 font-size:11px;
-height:34px;
+height:36px;
 text-align:center;
 border-radius:6px;
 border:1px solid #999;
+width:100%;
 }
 
 /* selezione */
 .selectedSD{
 border:2px solid orange;
-background:#fff3cd;
 }
 
 /* top8 */
@@ -86,7 +83,7 @@ background:#c8e6c9;
 
 /* controller */
 #sdController{
-width:34px;
+width:32px;
 flex-shrink:0;
 display:flex;
 flex-direction:column;
@@ -95,94 +92,86 @@ gap:4px;
 
 #sdController button{
 height:32px;
-font-size:14px;
 }
 
-/* ✅ HCP PIÙ GRANDE */
+/* ✅ HCP grande */
 .big{
-font-size:42px;
+font-size:44px;
 text-align:center;
 font-weight:bold;
 }
 
-/* ✅ STB */
+/* STB */
 #simBox{
 display:flex;
 justify-content:center;
 align-items:center;
-gap:10px;
-margin:10px 0;
+gap:15px;
+margin:12px 0;
 }
 
 #simBox button{
-width:40px;
-height:40px;
+width:44px;
+height:44px;
 border-radius:50%;
 font-size:18px;
 }
 
 #sim{
-font-size:22px;
-padding:6px 14px;
-border-radius:8px;
+font-size:24px;
+padding:6px 16px;
+border-radius:10px;
 color:white;
+background:#ff9800;
 }
 
-/* ✅ BOTTONI GRANDI */
+/* bottoni */
 button{
 width:100%;
-padding:12px;
+padding:14px;
 margin-top:8px;
 border:none;
 border-radius:10px;
 background:#2e7d32;
 color:white;
-font-size:16px;
+font-size:18px;
 }
 
-/* testo sopra */
+/* testo */
 .desc{
-font-size:13px;
+font-size:14px;
 text-align:center;
-margin-bottom:6px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginBox" class="container">
-<h2 class="title">HCP PRO</h2>
-<input id="user" placeholder="Username">
-<input id="pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<button onclick="register()">Crea account</button>
-</div>
-
 <!-- APP -->
-<div id="app" class="hidden">
+<div id="app">
 
 <div class="container" style="position:relative">
 <h1 class="title">HCP PRO</h1>
-<button class="logoutBtn" onclick="logout()">Logout</button>
+<button class="logoutBtn">Logout</button>
 </div>
 
 <div class="container">
 
 <p class="desc">
-Inserisci i tuoi ultimi 20 risultati SD (score differential - li trovi su Federgolf) dal più vecchio al più recente. Clicca dentro il bottone e modifica con i tasti a destra.
+Inserisci i tuoi ultimi 20 risultati SD (score differential - li trovi su Federgolf) dal più vecchio al più recente.
+<br>Clicca dentro il bottone e cambia l'SD con i tasti a destra.
 </p>
 
 <div class="mainRow">
+
 <div class="grid" id="grid"></div>
 
 <div id="sdController">
 <button onclick="changeSelectedSD(-0.1)">−</button>
 <button onclick="changeSelectedSD(0.1)">+</button>
 </div>
-</div>
 
+</div>
 </div>
 
 <div class="container">
@@ -210,77 +199,37 @@ Inserisci i tuoi ultimi 20 risultati SD (score differential - li trovi su Federg
 </div>
 
 <script>
-let userCorrente=null
+let selectedIndex=null
+let stbValue=36
 let lastState=null
 let lastSimulatedList=null
-let stbValue=36
-let selectedIndex=null
 
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('sw.js')
-}
-
-/* login */
-function register(){
-localStorage.setItem("u_"+user.value,btoa(pass.value))
-localStorage.setItem("lastUser",user.value)
-userCorrente=user.value
-start()
-}
-
-function login(){
-if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
-userCorrente=user.value
-start()
-}else alert("Credenziali errate")
-}
-
-function logout(){
-location.reload()
-}
-
-function start(){
-loginBox.style.display="none"
-app.classList.remove("hidden")
-init()
-}
-
-/* init */
 function init(){
-grid.innerHTML=""
 for(let i=0;i<20;i++){
 let el=document.createElement("input")
-el.type="number"
 el.step="0.1"
 el.id="g"+i
 el.onclick=()=>selectSD(i)
 el.oninput=update
 grid.appendChild(el)
 }
-update()
 }
 
-/* selezione */
+init()
+
 function selectSD(i){
 selectedIndex=i
 document.querySelectorAll("#grid input").forEach(el=>el.classList.remove("selectedSD"))
-
-let el=document.getElementById("g"+i)
-el.classList.add("selectedSD")
-el.focus()
+document.getElementById("g"+i).classList.add("selectedSD")
 }
 
 /* modifica */
-function changeSelectedSD(delta){
+function changeSelectedSD(d){
 if(selectedIndex===null) return
-
 let el=document.getElementById("g"+selectedIndex)
-let val=parseFloat(el.value)
-if(isNaN(val)) val=0
-
-val+=delta
+let val=parseFloat(el.value)||0
+val+=d
 val=Math.max(0,Math.min(60,val))
-
 el.value=val.toFixed(1)
 update()
 }
@@ -295,39 +244,35 @@ updateSimColor()
 
 /* hcp */
 function calcHCP(list){
-let sorted=list.slice().sort((a,b)=>a-b)
-let top8=sorted.slice(0,8)
-return top8.reduce((a,b)=>a+b,0)/8
+let s=list.slice().sort((a,b)=>a-b).slice(0,8)
+return s.reduce((a,b)=>a+b,0)/8
 }
 
-/* ✅ grafico SOLO top 8 ordinati */
-function getTop8Ordered(list){
-
-let clean=list.filter(v=>v!==null)
-let sorted=clean.slice().sort((a,b)=>a-b)
-let best=sorted.slice(0,8)
-
-let result=[]
-
+/* top8 cronologico */
+function getTop8(list){
+let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
+let res=[]
 list.forEach(v=>{
-if(best.includes(v)){
-result.push(v)
-best.splice(best.indexOf(v),1)
+if(sorted.includes(v)){
+res.push(v)
+sorted.splice(sorted.indexOf(v),1)
 }
 })
-
-return result
+return res
 }
 
-/* update */
-function update(){
-
-let list=[]
+function getList(){
+let arr=[]
 for(let i=0;i<20;i++){
 let v=document.getElementById("g"+i).value
-list.push(v?parseFloat(v):null)
+arr.push(v?parseFloat(v):null)
+}
+return arr
 }
 
+function update(){
+
+let list=getList()
 let clean=list.filter(v=>v!==null)
 
 if(clean.length<8){
@@ -337,11 +282,11 @@ return
 
 hcp.innerText=calcHCP(clean).toFixed(2)
 
-/* highlight top8 */
+/* top8 highlight */
 document.querySelectorAll("input").forEach(i=>i.classList.remove("top8"))
-let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
+let s=clean.slice().sort((a,b)=>a-b).slice(0,8)
 
-sorted.forEach(val=>{
+s.forEach(val=>{
 for(let i=0;i<20;i++){
 let el=document.getElementById("g"+i)
 if(parseFloat(el.value)===val && !el.classList.contains("top8")){
@@ -351,42 +296,68 @@ break
 }
 })
 
-draw(getTop8Ordered(list))
+draw(getTop8(clean))
 updateSimColor()
 }
 
-/* grafico */
 function draw(data){
-
 if(window.chart)window.chart.destroy()
-
 window.chart=new Chart(grafico,{
 type:'line',
 data:{
 labels:data.map((_,i)=>i+1),
-datasets:[{
-data:data,
-borderColor:"green",
-fill:false
-}]
+datasets:[{data:data,borderColor:"green"}]
 }
 })
 }
 
-/* colori */
-function updateSimColor(){
+/* simula */
+function simula(){
 
-let list=[]
-for(let i=0;i<20;i++){
-let v=document.getElementById("g"+i).value
-list.push(v?parseFloat(v):null)
+let list=getList()
+let clean=list.filter(v=>v!==null)
+if(clean.length<8)return
+
+lastState=list.slice()
+
+let h=calcHCP(clean)
+let sd=(36-stbValue)+h
+
+list.shift()
+list.push(sd)
+
+lastSimulatedList=list
+
+hcp.innerText=calcHCP(list).toFixed(2)
+draw(getTop8(list))
 }
 
+/* conferma */
+function conferma(){
+if(!lastSimulatedList) return
+for(let i=0;i<20;i++){
+document.getElementById("g"+i).value = lastSimulatedList[i] ?? ""
+}
+update()
+}
+
+/* ✅ UNDO */
+function undo(){
+if(!lastState) return
+for(let i=0;i<20;i++){
+document.getElementById("g"+i).value = lastState[i] ?? ""
+}
+update()
+}
+
+/* colori */
+function updateSimColor(){
+let list=getList()
 let clean=list.filter(v=>v!==null)
 if(clean.length<8) return
 
-let oldH=calcHCP(clean)
-let sd=(36-stbValue)+oldH
+let old=calcHCP(clean)
+let sd=(36-stbValue)+old
 
 let newList=list.slice()
 newList.shift()
@@ -394,46 +365,12 @@ newList.push(sd)
 
 let newH=calcHCP(newList.filter(v=>v!==null))
 
-if(newH>oldH) sim.style.background="#e53935"
-else if(Math.abs(newH-oldH)<0.01) sim.style.background="#ff9800"
+if(newH>old) sim.style.background="#e53935"
+else if(Math.abs(newH-old)<0.01) sim.style.background="#ff9800"
 else sim.style.background="#2e7d32"
-}
-
-/* simula */
-function simula(){
-
-let list=[]
-for(let i=0;i<20;i++){
-let v=document.getElementById("g"+i).value
-list.push(v?parseFloat(v):null)
-}
-
-let clean=list.filter(v=>v!==null)
-if(clean.length<8)return
-
-lastState=list.slice()
-
-let sd=(36-stbValue)+calcHCP(clean)
-
-list.shift()
-list.push(sd)
-
-lastSimulatedList=list
-
-draw(getTop8Ordered(list))
-}
-
-/* ✅ UNDO FIXATO */
-function undo(){
-if(!lastState) return
-
-for(let i=0;i<20;i++){
-document.getElementById("g"+i).value = lastState[i] ?? ""
-}
-
-update()
 }
 </script>
 
 </body>
 </html>
+``
