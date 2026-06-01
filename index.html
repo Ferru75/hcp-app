@@ -27,6 +27,11 @@ background:white;
 margin:4px;
 border-radius:10px;
 padding:8px;
+  
+<p style="font-size:12px;">
+Inserisci i tuoi ultimi risultati SD (li trovi sui siti della Federgolf o Gesgolf) dal più vecchio al più recente
+</p>
+
 }
 
 /* LAYOUT */
@@ -40,18 +45,20 @@ align-items:center;
 .grid{
 flex:1;
 display:grid;
-grid-template-columns:repeat(5, 1fr);
+grid-template-columns:repeat(4, 1fr); /* ✅ 4 per riga */
 gap:3px;
 }
 
+
 .grid input{
-font-size:11px;
-height:24px;
+font-size:10px;
+height:22px;
 padding:1px;
 text-align:center;
 border-radius:4px;
 border:1px solid #bbb;
 }
+
 
 /* SELEZIONE */
 .selectedSD{
