@@ -21,37 +21,41 @@ gap:6px;
 
 /* SD INPUT */
 .grid input{
-font-size:18px;
-font-weight:bold;
-padding:10px;
-height:50px;
-border-radius:10px;
+font-size:14px;
+padding:6px;
+height:35px;
 text-align:center;
+border-radius:8px;
 border:1px solid #ccc;
 }
 
-/* selezione */
+/* selezione attiva */
 .selectedSD{
-border:3px solid #ff9800;
+border:2px solid #ff9800;
 background:#fff3cd;
 }
 
-/* CONTROLLER */
-#sdController{
+/* FRECCE LATERALI */
+.sdBox{
 display:flex;
-justify-content:flex-end;
-gap:10px;
-margin:10px 0;
 }
 
-#sdController button{
-width:60px;
-height:60px;
-font-size:24px;
-border-radius:12px;
+.sdArrows{
+display:flex;
+flex-direction:column;
+margin-left:2px;
+}
+
+.sdArrows button{
+width:28px;
+height:18px;
+font-size:12px;
+padding:0;
+margin:1px 0;
 background:#2e7d32;
 color:white;
 border:none;
+border-radius:4px;
 }
 
 /* STABLEFORD */
@@ -59,14 +63,14 @@ border:none;
 display:flex;
 align-items:center;
 justify-content:center;
-gap:15px;
+gap:10px;
 margin:10px 0;
 }
 
 #simBox button{
-width:60px;
-height:60px;
-font-size:28px;
+width:50px;
+height:50px;
+font-size:22px;
 border-radius:50%;
 background:#2e7d32;
 color:white;
@@ -74,14 +78,14 @@ border:none;
 }
 
 #sim{
-font-size:36px;
+font-size:28px;
 font-weight:bold;
-min-width:90px;
+min-width:70px;
 text-align:center;
 background:#ff9800;
 color:white;
-padding:12px;
-border-radius:12px;
+padding:10px;
+border-radius:10px;
 }
 
 #sim.low{background:#b71c1c;}
@@ -94,7 +98,7 @@ border-radius:12px;
 button{
 margin-top:6px;
 width:100%;
-padding:12px;
+padding:10px;
 background:green;
 color:white;
 border:none;
@@ -127,19 +131,16 @@ Clicca su ogni singolo box ed inserisci i tuoi ultimi 20 SD a partire dal più v
 position:absolute;
 top:10px;
 right:10px;
-background:#b71c1c;
-padding:6px 10px;">
+padding:4px 8px;
+font-size:11px;
+background:#2e7d32;
+width:auto;">
 Logout
 </button>
 
 </div>
 
 <div class="container">
-<div id="sdController">
-<button onclick="changeSelectedSD(-0.1)">−</button>
-<button onclick="changeSelectedSD(0.1)">+</button>
-</div>
-
 <div class="grid" id="grid"></div>
 </div>
 
@@ -198,7 +199,6 @@ localStorage.removeItem("lastUser")
 location.reload()
 }
 
-// START
 function start(){
 loginBox.style.display="none"
 app.classList.remove("hidden")
@@ -210,23 +210,26 @@ function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
 
-let el=document.createElement("input")
-el.type="number"
-el.step="0.1"
-el.id="g"+i
+let box=document.createElement("div")
+box.className="sdBox"
 
-el.onclick=()=>selectSD(i)
-el.oninput=()=>{update(); autoNext(i)}
+box.innerHTML=`
+<input id="g${i}" type="number" step="0.1" onclick="selectSD(${i})" oninput="update()">
 
-grid.appendChild(el)
+<div class="sdArrows">
+<button onclick="changeSelectedSD(-0.1)">−</button>
+<button onclick="changeSelectedSD(0.1)">+</button>
+</div>
+`
+
+grid.appendChild(box)
 }
 load()
 update()
 }
 
-// SELEZIONE SD
+// SELEZIONE
 function selectSD(i){
-
 selectedIndex=i
 
 document.querySelectorAll("#grid input").forEach(el=>{
@@ -236,35 +239,28 @@ el.classList.remove("selectedSD")
 document.getElementById("g"+i).classList.add("selectedSD")
 }
 
-// CAMBIO SD
+// CAMBIO
 function changeSelectedSD(delta){
 
 if(selectedIndex===null)return
 
 let el=document.getElementById("g"+selectedIndex)
 let val=parseFloat(el.value)
-if(isNaN(val))val=0
+
+if(isNaN(val)) val=0
 
 val+=delta
+
+if(val<0) val=0
+if(val>60) val=60
+
 el.value=val.toFixed(1)
 
 update()
-
-// PASSA AUTOMATICO
-autoNext(selectedIndex)
-}
-
-// AUTO NEXT
-function autoNext(i){
-
-if(i<19){
-selectSD(i+1)
-}
 }
 
 // STABLEFORD
 function changeSTB(d){
-
 stbValue+=d
 if(stbValue<20)stbValue=20
 if(stbValue>45)stbValue=45
@@ -282,12 +278,13 @@ else sim.classList.add("high")
 function getFull(){
 let arr=[]
 for(let i=0;i<20;i++){
-let v=g("g"+i).value
+let v=document.getElementById("g"+i).value
 arr.push(v!==""?parseFloat(v):null)
 }
 return arr
 }
 
+// HCP
 function calcHCP(list){
 let sorted=list.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
@@ -315,7 +312,7 @@ let top8=sorted.slice(0,8)
 
 top8.forEach(val=>{
 for(let i=0;i<20;i++){
-let el=g("g"+i)
+let el=document.getElementById("g"+i)
 if(parseFloat(el.value)===val&&!el.classList.contains("top8")){
 el.classList.add("top8")
 break
@@ -357,14 +354,12 @@ backgroundColor:"rgba(0,128,0,0.2)"
 })
 }
 
-// SIMULA
+// SIMULA (semplice)
 function simula(){
 
 let full=getFull()
 let base=full.filter(v=>v!==null)
 if(base.length<8)return
-
-lastState=full.slice()
 
 let old=calcHCP(base)
 let stb=stbValue
@@ -387,7 +382,8 @@ draw(newList)
 function conferma(){
 if(!lastSimulatedList)return
 for(let i=0;i<20;i++){
-g("g"+i).value=lastSimulatedList[i]||""
+document.getElementById("g"+i).value=
+lastSimulatedList[i]?lastSimulatedList[i].toFixed(2):""
 }
 save()
 update()
@@ -396,24 +392,24 @@ update()
 function undo(){
 if(!lastState)return
 for(let i=0;i<20;i++){
-g("g"+i).value=lastState[i]||""
+document.getElementById("g"+i).value=
+lastState[i]?lastState[i]:""
 }
 save()
 update()
 }
 
-function g(id){return document.getElementById(id)}
-
 // STORAGE
 function save(){
 for(let i=0;i<20;i++){
-localStorage.setItem(userCorrente+"_g"+i,g("g"+i).value)
+localStorage.setItem(userCorrente+"_g"+i,
+document.getElementById("g"+i).value)
 }}
 
 function load(){
 for(let i=0;i<20;i++){
 let v=localStorage.getItem(userCorrente+"_g"+i)
-if(v)g("g"+i).value=v
+if(v)document.getElementById("g"+i).value=v
 }}
 
 </script>
