@@ -6,48 +6,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HCP PRO</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2e7d32">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{font-family:Arial;background:#e8f5e9;margin:0}
 .container{background:white;margin:10px;border-radius:14px;padding:14px}
 
+/* GRID */
 .grid{
 display:grid;
 grid-template-columns:repeat(5,1fr);
 gap:6px;
 }
 
-input,select{
-width:100%;
-padding:6px;
-border-radius:8px;
+/* SD INPUT */
+.grid input{
+font-size:18px;
+font-weight:bold;
+padding:10px;
+height:50px;
+border-radius:10px;
 text-align:center;
-border:1px solid #ccc
+border:1px solid #ccc;
 }
 
-button{
-margin-top:4px;
-padding:6px;
-background:green;
+/* selezione */
+.selectedSD{
+border:3px solid #ff9800;
+background:#fff3cd;
+}
+
+/* CONTROLLER */
+#sdController{
+display:flex;
+justify-content:flex-end;
+gap:10px;
+margin:10px 0;
+}
+
+#sdController button{
+width:60px;
+height:60px;
+font-size:24px;
+border-radius:12px;
+background:#2e7d32;
 color:white;
 border:none;
-border-radius:8px;
 }
 
-.grid button{
-flex:1;
-font-size:12px;
-}
-
-.sdBox{
-display:flex;
-gap:2px;
-}
-
+/* STABLEFORD */
 #simBox{
 display:flex;
 align-items:center;
@@ -77,60 +84,62 @@ padding:12px;
 border-radius:12px;
 }
 
-#sim.low{ background:#b71c1c; }
-#sim.mid{ background:#ff9800; }
-#sim.high{ background:#2e7d32; }
+#sim.low{background:#b71c1c;}
+#sim.mid{background:#ff9800;}
+#sim.high{background:#2e7d32;}
 
 .big{font-size:46px;text-align:center;font-weight:bold}
 .top8{background:#c8e6c9}
-.warning{background:#ffcdd2}
 
-#splash{
-position:fixed;
-top:0;
-left:0;
+button{
+margin-top:6px;
 width:100%;
-height:100%;
-background:#2e7d32;
+padding:12px;
+background:green;
 color:white;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:32px;
-z-index:9999;
-}
-
-/* ✅ fade login */
-#loginBox{
-transition:opacity 0.3s;
+border:none;
+border-radius:10px
 }
 </style>
 </head>
 
 <body>
 
-<div id="splash">HCP PRO ⛳</div>
-
 <div id="loginBox" class="container">
 <h2 style="text-align:center;">HCP PRO</h2>
-<p style="text-align:center;">Accedi o crea account</p>
-
 <input id="user" placeholder="Username">
 <input id="pass" type="password" placeholder="Password">
-
 <button onclick="login()">Login</button>
 <button onclick="register()">Crea account</button>
 </div>
 
 <div id="app" class="hidden">
 
-<div class="container">
+<div class="container" style="position:relative">
+
 <h1 style="text-align:center;">HCP PRO</h1>
-<p style="text-align:center">Inserisci i tuoi ultimi 20 SD dal più vecchio</p>
-<button onclick="logout()">Logout</button>
+
+<p style="text-align:center">
+Clicca su ogni singolo box ed inserisci i tuoi ultimi 20 SD a partire dal più vecchio
+</p>
+
+<button onclick="logout()" style="
+position:absolute;
+top:10px;
+right:10px;
+background:#b71c1c;
+padding:6px 10px;">
+Logout
+</button>
+
 </div>
 
 <div class="container">
+<div id="sdController">
+<button onclick="changeSelectedSD(-0.1)">−</button>
+<button onclick="changeSelectedSD(0.1)">+</button>
+</div>
+
 <div class="grid" id="grid"></div>
 </div>
 
@@ -140,24 +149,10 @@ transition:opacity 0.3s;
 
 <div class="container">
 
-<select id="campo"></select>
-
-<select id="tee">
-<option value="giallo">Giallo</option>
-<option value="bianco">Bianco</option>
-<option value="verde">Verde</option>
-<option value="rosso">Rosso</option>
-</select>
-
-<input id="crManuale" type="number" step="0.1" placeholder="CR override">
-<input id="slopeManuale" type="number" placeholder="Slope override">
-
-<div id="infoCampo"></div>
-
 <div id="simBox">
-  <button onclick="changeSTB(-1)">−</button>
-  <div id="sim" class="mid">36</div>
-  <button onclick="changeSTB(1)">+</button>
+<button onclick="changeSTB(-1)">−</button>
+<div id="sim" class="mid">36</div>
+<button onclick="changeSTB(1)">+</button>
 </div>
 
 <button onclick="simula()">Simula gara</button>
@@ -165,7 +160,6 @@ transition:opacity 0.3s;
 <button onclick="undo()">↩ Torna indietro</button>
 
 <div id="out"></div>
-<div id="target"></div>
 
 </div>
 
@@ -178,22 +172,13 @@ transition:opacity 0.3s;
 <script>
 
 let userCorrente=null
-let campi=[]
 let lastState=null
 let lastSimulatedList=null
 let stbValue=36
+let selectedIndex=null
 
-setTimeout(()=>{
-document.getElementById("splash").style.display="none"
-},1000)
-
-window.addEventListener("DOMContentLoaded",()=>{
-let saved=localStorage.getItem("lastUser")
-if(saved){userCorrente=saved;start()}
-})
-
+// LOGIN
 function register(){
-if(!user.value || !pass.value)return alert("Inserisci dati")
 localStorage.setItem("u_"+user.value,btoa(pass.value))
 localStorage.setItem("lastUser",user.value)
 userCorrente=user.value
@@ -213,89 +198,91 @@ localStorage.removeItem("lastUser")
 location.reload()
 }
 
-/* ✅ LOGIN FIX */
+// START
 function start(){
-
-// fade out login
-loginBox.style.opacity=0;
-
-setTimeout(()=>{
-loginBox.style.display="none";
-},300);
-
-// mostra app
+loginBox.style.display="none"
 app.classList.remove("hidden")
-
 init()
 }
 
-async function init(){
+// INIT
+function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
-let box=document.createElement("div")
-box.className="sdBox"
 
-box.innerHTML=`
-<button onclick="changeSD(${i},-0.1)">−</button>
-<input id="g${i}" type="number" step="0.1" oninput="update()">
-<button onclick="changeSD(${i},0.1)">+</button>
-`
-grid.appendChild(box)
+let el=document.createElement("input")
+el.type="number"
+el.step="0.1"
+el.id="g"+i
+
+el.onclick=()=>selectSD(i)
+el.oninput=()=>{update(); autoNext(i)}
+
+grid.appendChild(el)
 }
-await loadCampi()
 load()
 update()
 }
 
-async function loadCampi(){
-let res=await fetch("campi.json")
-campi=await res.json()
-campo.innerHTML='<option value="">Campo</option>'
-campi.forEach(c=>{
-let o=document.createElement("option")
-o.value=c.nome
-o.textContent=c.nome
-campo.appendChild(o)
+// SELEZIONE SD
+function selectSD(i){
+
+selectedIndex=i
+
+document.querySelectorAll("#grid input").forEach(el=>{
+el.classList.remove("selectedSD")
 })
+
+document.getElementById("g"+i).classList.add("selectedSD")
 }
 
-campo.onchange=updateInfo
-tee.onchange=updateInfo
+// CAMBIO SD
+function changeSelectedSD(delta){
 
-function updateInfo(){
-let c=campi.find(x=>x.nome===campo.value)
-if(!c)return
-let d=c.tee[tee.value]||c.tee.giallo
-infoCampo.innerHTML="CR "+d.cr+" | Slope "+d.slope
-}
+if(selectedIndex===null)return
 
-function changeSD(i,d){
-let el=document.getElementById("g"+i)
-let v=parseFloat(el.value)
-if(isNaN(v))v=0
-v+=d
-if(v<0)v=0
-if(v>60)v=60
-el.value=v.toFixed(1)
+let el=document.getElementById("g"+selectedIndex)
+let val=parseFloat(el.value)
+if(isNaN(val))val=0
+
+val+=delta
+el.value=val.toFixed(1)
+
 update()
+
+// PASSA AUTOMATICO
+autoNext(selectedIndex)
 }
 
+// AUTO NEXT
+function autoNext(i){
+
+if(i<19){
+selectSD(i+1)
+}
+}
+
+// STABLEFORD
 function changeSTB(d){
+
 stbValue+=d
 if(stbValue<20)stbValue=20
 if(stbValue>45)stbValue=45
+
 sim.innerText=stbValue
 
 sim.classList.remove("low","mid","high")
+
 if(stbValue<34)sim.classList.add("low")
 else if(stbValue<=37)sim.classList.add("mid")
 else sim.classList.add("high")
 }
 
+// DATI
 function getFull(){
 let arr=[]
 for(let i=0;i<20;i++){
-let v=document.getElementById("g"+i).value
+let v=g("g"+i).value
 arr.push(v!==""?parseFloat(v):null)
 }
 return arr
@@ -307,7 +294,9 @@ let top8=sorted.slice(0,8)
 return top8.reduce((a,b)=>a+b,0)/8
 }
 
+// UPDATE
 function update(){
+
 let full=getFull()
 let clean=full.filter(v=>v!==null)
 
@@ -326,8 +315,8 @@ let top8=sorted.slice(0,8)
 
 top8.forEach(val=>{
 for(let i=0;i<20;i++){
-let el=document.getElementById("g"+i)
-if(parseFloat(el.value)===val && !el.classList.contains("top8")){
+let el=g("g"+i)
+if(parseFloat(el.value)===val&&!el.classList.contains("top8")){
 el.classList.add("top8")
 break
 }
@@ -338,7 +327,9 @@ save()
 draw(full)
 }
 
+// GRAFICO
 function draw(list){
+
 let clean=list.filter(v=>v!==null)
 let sorted=clean.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
@@ -360,17 +351,13 @@ labels:result.map((_,i)=>i+1),
 datasets:[{
 data:result,
 borderColor:"green",
-backgroundColor:"rgba(0,128,0,0.2)",
-tension:0.3
+backgroundColor:"rgba(0,128,0,0.2)"
 }]
-},
-options:{
-plugins:{legend:{display:false}},
-scales:{y:{reverse:true}}
 }
 })
 }
 
+// SIMULA
 function simula(){
 
 let full=getFull()
@@ -379,22 +366,10 @@ if(base.length<8)return
 
 lastState=full.slice()
 
-let campoSel=campi.find(c=>c.nome===campo.value)
-if(!campoSel)return
-
-let cr=parseFloat(crManuale.value)
-let slope=parseFloat(slopeManuale.value)
-
-let dati=(!isNaN(cr)&&!isNaN(slope))
-?{cr,slope}
-:(campoSel.tee[tee.value]||campoSel.tee.giallo)
-
+let old=calcHCP(base)
 let stb=stbValue
 
-let old=calcHCP(base)
-
-let score=dati.cr+(36-stb)+old
-let sd=(113/dati.slope)*(score-dati.cr)
+let sd=(36-stb)+old
 
 let newList=full.slice()
 newList.shift()
@@ -408,11 +383,11 @@ hcp.innerText=next.toFixed(2)
 draw(newList)
 }
 
+// CONFIRM / UNDO
 function conferma(){
 if(!lastSimulatedList)return
 for(let i=0;i<20;i++){
-document.getElementById("g"+i).value=
-lastSimulatedList[i]?lastSimulatedList[i].toFixed(2):""
+g("g"+i).value=lastSimulatedList[i]||""
 }
 save()
 update()
@@ -421,31 +396,27 @@ update()
 function undo(){
 if(!lastState)return
 for(let i=0;i<20;i++){
-document.getElementById("g"+i).value=
-lastState[i]?lastState[i]:""
+g("g"+i).value=lastState[i]||""
 }
 save()
 update()
 }
 
+function g(id){return document.getElementById(id)}
+
+// STORAGE
 function save(){
 for(let i=0;i<20;i++){
-localStorage.setItem(userCorrente+"_g"+i,
-document.getElementById("g"+i).value)
+localStorage.setItem(userCorrente+"_g"+i,g("g"+i).value)
 }}
 
 function load(){
 for(let i=0;i<20;i++){
 let v=localStorage.getItem(userCorrente+"_g"+i)
-if(v)document.getElementById("g"+i).value=v
+if(v)g("g"+i).value=v
 }}
-
-if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("service-worker.js")
-}
 
 </script>
 
 </body>
 </html>
-``
