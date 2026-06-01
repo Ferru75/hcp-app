@@ -7,7 +7,7 @@
 
 <title>HCP PRO</title>
 
-<link rel="manifest" href="manifest.json">
+manifest.json
 <meta name="theme-color" content="#2e7d32">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,7 +19,6 @@ background:#eef7ee;
 margin:0;
 }
 
-/* layout */
 .container{
 background:white;
 margin:4px;
@@ -34,7 +33,6 @@ font-weight:bold;
 margin:8px 0;
 }
 
-/* logout FIX */
 .logoutBtn{
 position:absolute;
 top:6px;
@@ -48,19 +46,30 @@ border:none;
 width:auto;
 }
 
-/* select campo */
+/* select */
 .selectorRow{
 display:flex;
-gap:8px;
-margin-bottom:8px;
+gap:6px;
 }
 
 .selectorRow select{
 flex:1;
-padding:8px;
+padding:6px;
 border-radius:8px;
-border:1px solid #ccc;
+}
+
+/* CR SLOPE */
+.infoRow{
+display:flex;
+gap:6px;
+margin-top:6px;
+}
+
+.infoRow button{
+flex:1;
+padding:8px;
 font-size:14px;
+background:#607d8b;
 }
 
 /* testo */
@@ -80,16 +89,13 @@ gap:4px;
 height:42px;
 border-radius:8px;
 border:1px solid #999;
-font-size:13px;
 display:flex;
 align-items:center;
 justify-content:center;
 background:#f3f3f3;
 }
 
-.top8{
-background:#c8e6c9;
-}
+.top8{background:#c8e6c9;}
 
 /* HCP */
 .big{
@@ -98,7 +104,7 @@ font-weight:bold;
 display:flex;
 align-items:center;
 justify-content:center;
-height:80px;
+height:90px;
 }
 
 /* stb */
@@ -110,10 +116,8 @@ margin:10px;
 }
 
 #simBox button{
-width:46px;
-height:46px;
+width:46px;height:46px;
 border-radius:50%;
-font-size:20px;
 }
 
 #sim{
@@ -147,18 +151,24 @@ font-size:18px;
 
 <div class="container">
 <p class="desc">
-Inserisci i tuoi ultimi 20 SD.<br>
-Tap = −0.1 • Tieni premuto = + veloce
+Tap = -0.1 • Tieni premuto = incremento veloce
 </p>
 <div class="grid" id="grid"></div>
 </div>
 
-<!-- ✅ CAMPI DINAMICI -->
+<!-- ✅ CAMPI -->
 <div class="container">
+
 <div class="selectorRow">
 <select id="campo"></select>
 <select id="tee"></select>
 </div>
+
+<div class="infoRow">
+<button onclick="modCR()">CR: <span id="crVal">--</span></button>
+<button onclick="modSlope()">Slope: <span id="slopeVal">--</span></button>
+</div>
+
 </div>
 
 <div class="container">
@@ -174,7 +184,7 @@ Tap = −0.1 • Tieni premuto = + veloce
 </div>
 
 <button onclick="simula()">Simula gara</button>
-<button onclick="conferma()">✅ Conferma risultato</button>
+<button onclick="conferma()">✅ Conferma</button>
 <button onclick="undo()">↩ Undo</button>
 
 </div>
@@ -187,16 +197,13 @@ Tap = −0.1 • Tieni premuto = + veloce
 let data = new Array(20).fill(null)
 let stbValue = 36
 let lastState = null
-let campiData = []
 
-function vibrate(t){
-if(!navigator.vibrate) return
-navigator.vibrate(t==="tap"?10:5)
-}
+let campiData=[]
+let currentCR=null
+let currentSlope=null
 
-/* ✅ CARICA CAMPI.JSON */
+/* ✅ CARICA JSON */
 async function loadCampi(){
-try{
 let res = await fetch("campi.json")
 campiData = await res.json()
 
@@ -208,27 +215,64 @@ opt.value=i
 opt.textContent=c.nome
 campo.appendChild(opt)
 })
-
-}catch(e){
-console.error("Errore campi.json",e)
-}
 }
 
-/* cambio campo → aggiorna tee */
+/* cambio campo */
 campo.addEventListener("change",()=>{
+
 let idx=campo.value
 tee.innerHTML=""
 
 if(idx==="") return
 
-campiData[idx].tee.forEach(t=>{
+let tees=campiData[idx].tee
+
+Object.keys(tees).forEach(t=>{
 let opt=document.createElement("option")
-opt.textContent=t
+opt.value=t
+opt.textContent=t.toUpperCase()
 tee.appendChild(opt)
 })
+
 })
 
-/* INIT SD */
+/* scelta tee */
+tee.addEventListener("change",()=>{
+
+let c=campo.value
+let t=tee.value
+
+if(!c||!t) return
+
+let info=campiData[c].tee[t]
+
+currentCR=info.cr
+currentSlope=info.slope
+
+updateCRSlope()
+
+})
+
+/* display */
+function updateCRSlope(){
+crVal.innerText=currentCR ?? "--"
+slopeVal.innerText=currentSlope ?? "--"
+}
+
+/* modifica */
+function modCR(){
+if(currentCR===null) return
+currentCR=prompt("Modifica CR",currentCR)
+updateCRSlope()
+}
+
+function modSlope(){
+if(currentSlope===null) return
+currentSlope=prompt("Modifica slope",currentSlope)
+updateCRSlope()
+}
+
+/* SD */
 function init(){
 for(let i=0;i<20;i++){
 
@@ -239,43 +283,36 @@ el.innerText="--"
 let interval=null
 let speed=120
 
-/* tap */
-el.onclick=()=>{
-changeSD(i,-0.1)
-vibrate("tap")
-}
+el.onclick=()=>changeSD(i,-0.1)
 
-/* hold veloce */
-function startHold(){
-stopHold()
-speed=120
-
+function start(){
+stop()
 interval=setInterval(()=>{
+
 changeSD(i,0.1)
-vibrate("hold")
 
 if(speed>40){
 speed-=15
 clearInterval(interval)
-interval=setInterval(()=>{
-changeSD(i,0.1)
-},speed)
+interval=setInterval(()=>changeSD(i,0.1),speed)
 }
+
 },speed)
 }
 
-function stopHold(){
+function stop(){
 if(interval){
 clearInterval(interval)
 interval=null
+speed=120
 }
 }
 
-el.onmousedown=startHold
-el.onmouseup=stopHold
-el.onmouseleave=stopHold
-el.ontouchstart=startHold
-el.ontouchend=stopHold
+el.onmousedown=start
+el.onmouseup=stop
+el.onmouseleave=stop
+el.ontouchstart=start
+el.ontouchend=stop
 
 grid.appendChild(el)
 }
@@ -285,14 +322,13 @@ init()
 loadCampi()
 
 function changeSD(i,d){
-if(data[i]===null) data[i]=0
+if(data[i]===null)data[i]=0
 data[i]+=d
 data[i]=Math.round(data[i]*10)/10
 data[i]=Math.max(0,Math.min(60,data[i]))
 update()
 }
 
-/* HCP */
 function calcHCP(list){
 let s=list.slice().sort((a,b)=>a-b).slice(0,8)
 return s.reduce((a,b)=>a+b,0)/8
@@ -300,14 +336,14 @@ return s.reduce((a,b)=>a+b,0)/8
 
 function getTop8(list){
 let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
-let res=[]
+let r=[]
 list.forEach(v=>{
 if(sorted.includes(v)){
-res.push(v)
+r.push(v)
 sorted.splice(sorted.indexOf(v),1)
 }
 })
-return res
+return r
 }
 
 function update(){
@@ -317,7 +353,7 @@ let clean=data.filter(v=>v!==null)
 hcp.innerText=clean.length<8?"--":calcHCP(clean).toFixed(2)
 
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText=data[i]!==null?data[i].toFixed(1):"--"
+el.innerText=data[i]??"--"
 el.classList.remove("top8")
 })
 
@@ -325,8 +361,8 @@ let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
 
 sorted.forEach(val=>{
 for(let i=0;i<data.length;i++){
-if(data[i]===val){
-document.getElementsByClassName("sdBtn")[i].classList.add("top8")
+if(data[i]==val){
+grid.children[i].classList.add("top8")
 break
 }
 }
@@ -355,7 +391,6 @@ borderColor:"green"
 })
 }
 
-/* stb */
 function changeSTB(d){
 stbValue+=d
 stbValue=Math.max(20,Math.min(45,stbValue))
@@ -363,7 +398,6 @@ sim.innerText=stbValue
 updateSimColor()
 }
 
-/* simula */
 function simula(){
 let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
@@ -378,7 +412,6 @@ data.push(sd)
 update()
 }
 
-/* undo */
 function undo(){
 if(!lastState)return
 data=[...lastState]
