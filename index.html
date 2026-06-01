@@ -21,8 +21,6 @@ button{margin-top:6px;width:100%;padding:12px;background:green;color:white;borde
 .hidden{display:none}
 .top8{background:#c8e6c9}
 .warning{background:#ffcdd2}
-
-/* SPLASH */
 #splash{
 position:fixed;
 top:0;
@@ -44,19 +42,15 @@ z-index:9999;
 
 <div id="splash">HCP PRO ⛳</div>
 
-<!-- LOGIN -->
 <div id="loginBox" class="container">
 <h2 style="text-align:center;">HCP PRO</h2>
 <p style="text-align:center;">Accedi o crea account</p>
-
 <input id="user" placeholder="Username">
 <input id="pass" type="password" placeholder="Password">
-
 <button onclick="login()">Login</button>
 <button onclick="register()">Crea account</button>
 </div>
 
-<!-- APP -->
 <div id="app" class="hidden">
 
 <div class="container">
@@ -111,18 +105,15 @@ let campi=[]
 let lastState=null
 let lastSimulatedList=null
 
-// SPLASH
 setTimeout(()=>{
 document.getElementById("splash").style.display="none"
 },1000)
 
-// AUTOLOGIN
 window.addEventListener("DOMContentLoaded",()=>{
 let saved=localStorage.getItem("lastUser")
 if(saved){userCorrente=saved;start()}
 })
 
-// LOGIN
 function register(){
 if(!user.value || !pass.value) return alert("Inserisci dati")
 localStorage.setItem("u_"+user.value,btoa(pass.value))
@@ -146,14 +137,12 @@ localStorage.removeItem("lastUser")
 location.reload()
 }
 
-// START
 function start(){
 loginBox.classList.add("hidden")
 app.classList.remove("hidden")
 init()
 }
 
-// INIT
 async function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
@@ -169,7 +158,6 @@ load()
 update()
 }
 
-// CAMPI
 async function loadCampi(){
 let res=await fetch("campi.json")
 campi=await res.json()
@@ -184,7 +172,6 @@ campo.appendChild(o)
 })
 }
 
-// INFO CAMPO
 campo.onchange=updateInfo
 tee.onchange=updateInfo
 
@@ -195,7 +182,6 @@ let d=c.tee[tee.value]||c.tee.giallo
 infoCampo.innerHTML="CR "+d.cr+" | Slope "+d.slope
 }
 
-// DATI
 function getFull(){
 let arr=[]
 for(let i=0;i<20;i++){
@@ -205,14 +191,12 @@ arr.push(v!=="" ? parseFloat(v) : null)
 return arr
 }
 
-// HCP
 function calcHCP(list){
 let sorted=list.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
 return top8.reduce((a,b)=>a+b,0)/8
 }
 
-// UPDATE
 function update(){
 
 let full=getFull()
@@ -226,12 +210,10 @@ return
 let h=calcHCP(clean)
 hcp.innerText=h.toFixed(2)
 
-// reset
 for(let i=0;i<20;i++){
 document.getElementById("g"+i).classList.remove("top8","warning")
 }
 
-// top8
 let sorted=clean.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
 
@@ -246,10 +228,47 @@ break
 })
 
 save()
-draw(clean)
+draw(full)
 }
 
-// SIMULA (CORRETTA)
+// ✅ NUOVO GRAFICO
+function draw(list){
+
+let clean = list.filter(v => v !== null)
+let sorted = clean.slice().sort((a,b)=>a-b)
+let top8 = sorted.slice(0,8)
+
+let result = []
+
+list.forEach(v=>{
+  if(top8.includes(v)){
+    result.push(v)
+    let idx = top8.indexOf(v)
+    top8.splice(idx,1)
+  }
+})
+
+if(window.chart) window.chart.destroy()
+
+window.chart = new Chart(grafico,{
+  type:'line',
+  data:{
+    labels: result.map((_,i)=>i+1),
+    datasets:[{
+      data: result,
+      borderColor:"green",
+      backgroundColor:"rgba(0,128,0,0.2)",
+      tension:0.3
+    }]
+  },
+  options:{
+    plugins:{legend:{display:false}},
+    scales:{y:{reverse:true}}
+  }
+})
+
+}
+
 function simula(){
 
 let full=getFull()
@@ -286,42 +305,10 @@ let clean=newList.filter(v=>v!==null)
 let old=calcHCP(base)
 let next=calcHCP(clean)
 
-let stato = next<old?"🟢 SCENDI":next>old?"🔴 SALI":"⚪ STABILE"
-
-// TARGET
-let targetSTB=null
-for(let t=25;t<=45;t++){
-let sc=dati.cr+(36-t)+hcpAttuale
-let sdTest=(113/dati.slope)*(sc-dati.cr)
-
-let tmp=base.slice()
-tmp.shift()
-tmp.push(sdTest)
-
-if(calcHCP(tmp)<old){
-targetSTB=t
-break
-}
-}
-
-// evidenzia uscente
-document.getElementById("g0").classList.add("warning")
-
-out.innerHTML=
-"STB "+stb+" → SD "+sd.toFixed(2)+"<br>"+
-"Esce "+(removed?removed.toFixed(2):"-")+"<br>"+
-"Nuovo HCP "+next.toFixed(2)+" ("+(next-old).toFixed(2)+")<br>"+
-stato
-
-target.innerHTML = targetSTB
-?"🎯 Devi fare almeno "+targetSTB
-:"🔥 Serve gara alta"
-
 hcp.innerText=next.toFixed(2)
-draw(clean)
+draw(newList)
 }
 
-// CONFERMA
 function conferma(){
 if(!lastSimulatedList)return
 for(let i=0;i<20;i++){
@@ -332,7 +319,6 @@ save()
 update()
 }
 
-// UNDO
 function undo(){
 if(!lastState)return
 for(let i=0;i<20;i++){
@@ -343,24 +329,6 @@ save()
 update()
 }
 
-// CHART
-function draw(list){
-let values=[]
-for(let i=8;i<=list.length;i++){
-values.push(calcHCP(list.slice(0,i)))
-}
-if(window.chart)window.chart.destroy()
-
-window.chart=new Chart(grafico,{
-type:'line',
-data:{
-labels:values.map((_,i)=>i+8),
-datasets:[{data:values,borderColor:"green"}]
-}
-})
-}
-
-// STORAGE
 function save(){
 for(let i=0;i<20;i++){
 localStorage.setItem(userCorrente+"_g"+i,
@@ -373,7 +341,6 @@ let v=localStorage.getItem(userCorrente+"_g"+i)
 if(v)document.getElementById("g"+i).value=v
 }}
 
-// SERVICE WORKER
 if ("serviceWorker" in navigator) {
 navigator.serviceWorker.register("service-worker.js")
 }
