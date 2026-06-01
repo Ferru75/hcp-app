@@ -142,13 +142,20 @@ Tap = −0.1 • Tieni premuto = + veloce
 </div>
 
 <!-- ✅ CAMPO + TEE -->
-<div class="container">
 
+div class="selectorRow">
 <select id="campo"></select>
+<select id="tee"></select>
+</div>
 
-<select id="tee">
+<div class="inputRow">
+<input id="crManuale" type="number" step="0.1" placeholder="CR override">
+<input id="slopeManuale" type="number" placeholder="Slope override">
+</div>
+
 <option value="giallo">Giallo</option>
 <option value="bianco">Bianco</option>
+<option value="rosso">Rosso</option>
 </select>
 
 <input id="crManuale" type="number" step="0.1" placeholder="CR override">
@@ -159,6 +166,11 @@ Tap = −0.1 • Tieni premuto = + veloce
 </div>
 
 <!-- ✅ STB -->
+  
+<p style="text-align:center;font-size:14px">
+Seleziona il punteggio stableford e poi clicca su Simula gara!
+</p>
+
 <div class="container">
 
 <div id="simBox">
@@ -365,9 +377,40 @@ draw(clean)
 
 // STB
 function changeSTB(d){
-stbValue+=d
-stbValue=Math.max(0,Math.min(70,stbValue))
-sim.innerText=stbValue
+
+stbValue += d
+stbValue = Math.max(0, Math.min(70, stbValue))
+sim.innerText = stbValue
+
+updateSimColor()
+}
+
+unction updateSimColor(){
+
+let base = data.filter(v=>v!==null)
+if(base.length < 8) return
+
+let currentH = calcHCP(base)
+
+/* simula SD */
+let sd = (36 - stbValue) + currentH
+
+let tmp = [...data]
+tmp.shift()
+tmp.push(sd)
+
+let next = calcHCP(tmp.filter(v=>v!==null))
+
+/* colori */
+if(next < currentH){
+sim.style.background = "#2e7d32"   // verde
+}
+else if(next > currentH){
+sim.style.background = "#e53935"   // rosso
+}
+else{
+sim.style.background = "#ff9800"   // arancione
+}
 }
 
 // SIMULA
