@@ -7,7 +7,8 @@
 
 <title>HCP PRO</title>
 
-manifest.json
+<!-- ✅ FIX PWA -->
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2e7d32">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -46,7 +47,6 @@ border:none;
 width:auto;
 }
 
-/* select */
 .selectorRow{
 display:flex;
 gap:6px;
@@ -58,7 +58,6 @@ padding:6px;
 border-radius:8px;
 }
 
-/* CR SLOPE */
 .infoRow{
 display:flex;
 gap:6px;
@@ -72,13 +71,11 @@ font-size:14px;
 background:#607d8b;
 }
 
-/* testo */
 .desc{
 font-size:14px;
 text-align:center;
 }
 
-/* grid */
 .grid{
 display:grid;
 grid-template-columns:repeat(4,1fr);
@@ -97,7 +94,6 @@ background:#f3f3f3;
 
 .top8{background:#c8e6c9;}
 
-/* HCP */
 .big{
 font-size:56px;
 font-weight:bold;
@@ -107,7 +103,6 @@ justify-content:center;
 height:90px;
 }
 
-/* stb */
 #simBox{
 display:flex;
 justify-content:center;
@@ -128,7 +123,6 @@ color:white;
 background:#ff9800;
 }
 
-/* bottoni */
 button{
 width:100%;
 padding:14px;
@@ -156,9 +150,7 @@ Tap = -0.1 • Tieni premuto = incremento veloce
 <div class="grid" id="grid"></div>
 </div>
 
-<!-- ✅ CAMPI -->
 <div class="container">
-
 <div class="selectorRow">
 <select id="campo"></select>
 <select id="tee"></select>
@@ -168,7 +160,6 @@ Tap = -0.1 • Tieni premuto = incremento veloce
 <button onclick="modCR()">CR: <span id="crVal">--</span></button>
 <button onclick="modSlope()">Slope: <span id="slopeVal">--</span></button>
 </div>
-
 </div>
 
 <div class="container">
@@ -202,7 +193,7 @@ let campiData=[]
 let currentCR=null
 let currentSlope=null
 
-/* ✅ CARICA JSON */
+/* ✅ CARICA CAMPI */
 async function loadCampi(){
 let res = await fetch("campi.json")
 campiData = await res.json()
@@ -217,9 +208,8 @@ campo.appendChild(opt)
 })
 }
 
-/* cambio campo */
+/* campo */
 campo.addEventListener("change",()=>{
-
 let idx=campo.value
 tee.innerHTML=""
 
@@ -233,15 +223,12 @@ opt.value=t
 opt.textContent=t.toUpperCase()
 tee.appendChild(opt)
 })
-
 })
 
-/* scelta tee */
+/* tee */
 tee.addEventListener("change",()=>{
-
 let c=campo.value
 let t=tee.value
-
 if(!c||!t) return
 
 let info=campiData[c].tee[t]
@@ -250,25 +237,22 @@ currentCR=info.cr
 currentSlope=info.slope
 
 updateCRSlope()
-
 })
 
-/* display */
 function updateCRSlope(){
 crVal.innerText=currentCR ?? "--"
 slopeVal.innerText=currentSlope ?? "--"
 }
 
-/* modifica */
 function modCR(){
-if(currentCR===null) return
-currentCR=prompt("Modifica CR",currentCR)
+if(currentCR===null)return
+currentCR=parseFloat(prompt("Modifica CR",currentCR))
 updateCRSlope()
 }
 
 function modSlope(){
-if(currentSlope===null) return
-currentSlope=prompt("Modifica slope",currentSlope)
+if(currentSlope===null)return
+currentSlope=parseFloat(prompt("Modifica slope",currentSlope))
 updateCRSlope()
 }
 
@@ -288,15 +272,12 @@ el.onclick=()=>changeSD(i,-0.1)
 function start(){
 stop()
 interval=setInterval(()=>{
-
 changeSD(i,0.1)
-
 if(speed>40){
 speed-=15
 clearInterval(interval)
 interval=setInterval(()=>changeSD(i,0.1),speed)
 }
-
 },speed)
 }
 
@@ -353,7 +334,7 @@ let clean=data.filter(v=>v!==null)
 hcp.innerText=clean.length<8?"--":calcHCP(clean).toFixed(2)
 
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText=data[i]??"--"
+el.innerText = data[i] !== null ? data[i].toFixed(1) : "--"
 el.classList.remove("top8")
 })
 
@@ -361,7 +342,7 @@ let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
 
 sorted.forEach(val=>{
 for(let i=0;i<data.length;i++){
-if(data[i]==val){
+if(data[i]===val){
 grid.children[i].classList.add("top8")
 break
 }
@@ -391,14 +372,9 @@ borderColor:"green"
 })
 }
 
-function changeSTB(d){
-stbValue+=d
-stbValue=Math.max(20,Math.min(45,stbValue))
-sim.innerText=stbValue
-updateSimColor()
-}
-
+/* ✅ FIX SHIFT CORRETTO */
 function simula(){
+
 let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
 
@@ -406,8 +382,8 @@ lastState=[...data]
 
 let sd=(36-stbValue)+calcHCP(clean)
 
-data.shift()
-data.push(sd)
+/* ✅ SHIFT PERFETTO */
+data=[...data.slice(1), sd]
 
 update()
 }
@@ -422,7 +398,13 @@ function conferma(){
 lastState=null
 }
 
-/* colori */
+function changeSTB(d){
+stbValue+=d
+stbValue=Math.max(20,Math.min(45,stbValue))
+sim.innerText=stbValue
+updateSimColor()
+}
+
 function updateSimColor(){
 let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
