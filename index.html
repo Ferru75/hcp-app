@@ -18,81 +18,72 @@ body{font-family:Arial;background:#eef7ee;margin:0}
 
 .title{text-align:center;font-size:34px;font-weight:bold}
 
-/* descrizione */
+.logoutBtn{
+position:absolute;top:6px;right:6px;
+padding:6px 10px;border-radius:8px;
+background:#2e7d32;color:white;border:none;width:auto;
+}
+
+/* testo */
 .desc{text-align:center;font-size:14px}
 
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 
 .sdBtn{
-height:42px;
-border-radius:8px;
-border:1px solid #999;
-display:flex;
-align-items:center;
-justify-content:center;
-background:#f3f3f3;
+height:42px;border-radius:8px;border:1px solid #999;
+display:flex;align-items:center;justify-content:center;background:#f3f3f3;
 }
 
-/* HCP */
+.top8{background:#c8e6c9;}
+
+/* hcp */
 .big{
-font-size:56px;
-height:90px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold;
+font-size:56px;height:90px;
+display:flex;align-items:center;justify-content:center;font-weight:bold;
 }
 
-/* delta */
 .delta{text-align:center;font-size:18px;font-weight:bold}
 .green{color:#2e7d32}
 .red{color:#e53935}
 
-/* STB */
+/* stb */
 #simBox{display:flex;justify-content:center;gap:15px;margin:10px}
 #simBox button{width:46px;height:46px;border-radius:50%}
 #sim{font-size:22px;padding:8px 16px;border-radius:10px;color:white;background:#ff9800}
 
-/* bottoni */
 button{
-width:100%;
-padding:14px;
-margin-top:8px;
-border:none;
-border-radius:10px;
-background:#2e7d32;
-color:white;
-font-size:18px;
+width:100%;padding:14px;margin-top:8px;
+border:none;border-radius:10px;background:#2e7d32;
+color:white;font-size:18px;
 }
 
-/* selettori */
+/* campo */
 .selectorRow{display:flex;gap:6px}
 .selectorRow select{flex:1;padding:6px;border-radius:8px}
 
 .infoRow{display:flex;gap:6px;margin-top:6px}
 .infoRow button{flex:1;background:#607d8b;padding:8px;font-size:14px}
 
-/* titolo grafico */
 .chartTitle{text-align:center;font-size:16px;margin-bottom:6px}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container" style="position:relative">
 <h1 class="title">HCP PRO</h1>
+<button class="logoutBtn" onclick="logout()">Logout</button>
 </div>
 
 <div class="container">
 <p class="desc">
-Inserisci i tuoi ultimi 20 SD (dal più vecchio al più recente)<br>
-Tap = −0.1 • Tieni premuto = incremento veloce
+Inserisci i tuoi ultimi 20 SD (Federgolf)<br>
+Tap = −0.1 • Tieni premuto = + veloce
 </p>
 <div class="grid" id="grid"></div>
 </div>
 
-<!-- CAMPI -->
 <div class="container">
 <div class="selectorRow">
 <select id="campo"></select>
@@ -123,75 +114,31 @@ Tap = −0.1 • Tieni premuto = incremento veloce
 </div>
 
 <div class="container">
-<div class="chartTitle">Progresso Handicap</div>
+<div class="chartTitle">Trend ultimi 8 risultati validi</div>
 <canvas id="grafico"></canvas>
 </div>
 
 <script>
-let data = new Array(20).fill(null)
-let simulatedData = null
-let lastState = null
-let stbValue = 36
+let data=new Array(20).fill(null)
+let simulatedData=null
+let lastState=null
+let stbValue=36
 
-let hcpHistory = []
+let userCorrente="hcp_user"
 
-/* CAMPI */
-let campiData=[]
-let currentCR=null
-let currentSlope=null
-
-async function loadCampi(){
-let res=await fetch("campi.json")
-campiData=await res.json()
-
-campo.innerHTML='<option value="">Campo</option>'
-
-campiData.forEach((c,i)=>{
-let opt=document.createElement("option")
-opt.value=i
-opt.textContent=c.nome
-campo.appendChild(opt)
-})
+/* SAVE / LOAD */
+function save(){
+localStorage.setItem(userCorrente,JSON.stringify(data))
+}
+function load(){
+let s=localStorage.getItem(userCorrente)
+if(s) data=JSON.parse(s)
 }
 
-campo.addEventListener("change",()=>{
-tee.innerHTML=""
-let idx=campo.value
-if(idx==="") return
-
-let tees=campiData[idx].tee
-
-Object.keys(tees).forEach(t=>{
-let opt=document.createElement("option")
-opt.value=t
-opt.textContent=t.toUpperCase()
-tee.appendChild(opt)
-})
-})
-
-tee.addEventListener("change",()=>{
-let c=campo.value
-let t=tee.value
-if(!c || !t) return
-
-let info=campiData[c].tee[t]
-currentCR=info.cr
-currentSlope=info.slope
-
-crVal.innerText=currentCR
-slopeVal.innerText=currentSlope
-})
-
-function modCR(){
-if(currentCR===null) return
-currentCR=parseFloat(prompt("CR",currentCR))||currentCR
-crVal.innerText=currentCR
-}
-
-function modSlope(){
-if(currentSlope===null) return
-currentSlope=parseFloat(prompt("Slope",currentSlope))||currentSlope
-slopeVal.innerText=currentSlope
+/* logout */
+function logout(){
+localStorage.removeItem(userCorrente)
+location.reload()
 }
 
 /* SD */
@@ -206,29 +153,19 @@ let interval=null
 
 el.onclick=()=>changeSD(i,-0.1)
 
-/* super veloce */
 function start(){
 stop()
 let speed=100
-
 interval=setInterval(()=>{
 changeSD(i,0.1)
-
 if(speed>20){
 speed-=20
 clearInterval(interval)
 interval=setInterval(()=>changeSD(i,0.1),speed)
 }
-
 },speed)
 }
-
-function stop(){
-if(interval){
-clearInterval(interval)
-interval=null
-}
-}
+function stop(){if(interval){clearInterval(interval);interval=null}}
 
 el.onmousedown=start
 el.onmouseup=stop
@@ -240,11 +177,8 @@ grid.appendChild(el)
 }
 }
 
-init()
-loadCampi()
-
 function changeSD(i,d){
-if(data[i]===null) data[i]=0
+if(data[i]===null)data[i]=0
 data[i]+=d
 data[i]=Math.round(data[i]*10)/10
 data[i]=Math.max(0,Math.min(60,data[i]))
@@ -257,18 +191,29 @@ let s=list.slice().sort((a,b)=>a-b).slice(0,8)
 return s.reduce((a,b)=>a+b,0)/8
 }
 
+function getTop8(list){
+let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
+let r=[]
+list.forEach(v=>{
+if(sorted.includes(v)){
+r.push(v)
+sorted.splice(sorted.indexOf(v),1)
+}
+})
+return r
+}
+
 /* UPDATE */
 function update(){
 
-let base = simulatedData ? simulatedData : data
-let clean = base.filter(v=>v!==null)
-let real = data.filter(v=>v!==null)
+let base=simulatedData?simulatedData:data
+let clean=base.filter(v=>v!==null)
 
-hcp.innerText = clean.length<8 ? "--" : calcHCP(clean).toFixed(2)
+hcp.innerText=clean.length<8?"--":calcHCP(clean).toFixed(2)
 
 /* delta */
-if(simulatedData && real.length>=8){
-let oldH=calcHCP(real)
+if(simulatedData){
+let oldH=calcHCP(data.filter(v=>v!==null))
 let newH=calcHCP(clean)
 let diff=(newH-oldH).toFixed(2)
 
@@ -278,12 +223,26 @@ delta.className="delta "+(diff>0?"red":(diff<0?"green":""))
 delta.innerText=""
 }
 
-/* aggiorna SD */
+/* SD display */
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText=data[i]!==null ? data[i].toFixed(1) : "--"
+el.innerText=data[i]!==null?data[i].toFixed(1):"--"
+el.classList.remove("top8")
 })
 
-draw()
+/* top8 verde */
+let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
+
+sorted.forEach(val=>{
+for(let i=0;i<base.length;i++){
+if(base[i]===val){
+grid.children[i].classList.add("top8")
+break
+}
+}
+})
+
+draw(base)
+save()
 }
 
 /* SIMULA */
@@ -292,65 +251,62 @@ let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
 
 lastState=[...data]
-
 let sd=(36-stbValue)+calcHCP(clean)
 
-simulatedData=[...data.slice(1), sd]
-
+simulatedData=[...data.slice(1),sd]
 update()
 }
 
 /* CONFERMA */
 function conferma(){
-
-if(!simulatedData) return
-
+if(!simulatedData)return
 data=[...simulatedData]
 simulatedData=null
-
-let clean=data.filter(v=>v!==null)
-if(clean.length>=8){
-hcpHistory.push(calcHCP(clean))
-}
-
 update()
 }
 
 /* UNDO */
 function undo(){
-if(!lastState) return
+if(!lastState)return
 data=[...lastState]
 simulatedData=null
 update()
 }
 
-/* STB 0-70 */
+/* STB */
 function changeSTB(d){
 stbValue+=d
 stbValue=Math.max(0,Math.min(70,stbValue))
 sim.innerText=stbValue
 }
 
-/* GRAFICO PROGRESSO */
-function draw(){
+/* GRAFICO ORIGINALE */
+function draw(list){
 
-if(hcpHistory.length===0) return
+let clean=list.filter(v=>v!==null)
+if(clean.length===0)return
 
 if(window.chart)window.chart.destroy()
+
+let top8=getTop8(list)
 
 window.chart=new Chart(grafico,{
 type:'line',
 data:{
-labels:hcpHistory.map((_,i)=>"Gara "+(i+1)),
+labels:top8.map((_,i)=>i+1),
 datasets:[{
-label:"Progresso Handicap",
-data:hcpHistory,
-borderColor:"blue",
+label:"Trend ultimi 8 risultati validi",
+data:top8,
+borderColor:"green",
 fill:false
 }]
 }
 })
 }
+
+init()
+load()
+update()
 </script>
 
 </body>
