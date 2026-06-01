@@ -4,7 +4,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>HCP PRO</title>
+
+<!-- ✅ PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2e7d32">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -15,36 +20,37 @@ background:#eef7ee;
 margin:0;
 }
 
-/* LAYOUT */
-.container{
-background:white;
-margin:6px;
-border-radius:12px;
-padding:10px;
-}
-
 .hidden{display:none;}
 
+.container{
+background:white;
+margin:4px;
+border-radius:10px;
+padding:8px;
+}
+
+/* LAYOUT */
 .mainRow{
 display:flex;
-gap:6px;
+gap:4px;
 align-items:center;
 }
 
-/* GRID SD */
+/* ✅ GRID SUPER COMPATTA */
 .grid{
 flex:1;
 display:grid;
-grid-template-columns:repeat(4, 1fr);
-gap:4px;
+grid-template-columns:repeat(5, 1fr);
+gap:3px;
 }
 
 .grid input{
-font-size:12px;
-height:28px;
+font-size:11px;
+height:24px;
+padding:1px;
 text-align:center;
-border-radius:5px;
-border:1px solid #ccc;
+border-radius:4px;
+border:1px solid #bbb;
 }
 
 /* SELEZIONE */
@@ -58,18 +64,18 @@ background:#fff3cd;
 background:#c8e6c9;
 }
 
-/* CONTROLLER */
+/* ✅ CONTROLLER PICCOLO */
 #sdController{
 display:flex;
 flex-direction:column;
-gap:6px;
+gap:5px;
 }
 
 #sdController button{
-width:40px;
-height:40px;
-font-size:18px;
-border-radius:8px;
+width:34px;
+height:34px;
+font-size:16px;
+border-radius:6px;
 background:#2e7d32;
 color:white;
 border:none;
@@ -77,7 +83,7 @@ border:none;
 
 /* HCP */
 .big{
-font-size:36px;
+font-size:32px;
 text-align:center;
 font-weight:bold;
 }
@@ -88,32 +94,31 @@ display:flex;
 justify-content:center;
 align-items:center;
 gap:10px;
-margin:10px 0;
+margin:8px 0;
 }
 
 #simBox button{
-width:40px;
-height:40px;
+width:36px;
+height:36px;
 border-radius:50%;
 background:#2e7d32;
 color:white;
 border:none;
-font-size:20px;
 }
 
 #sim{
-font-size:22px;
+font-size:20px;
 font-weight:bold;
 background:#ff9800;
 color:white;
-padding:6px 12px;
-border-radius:8px;
+padding:5px 10px;
+border-radius:6px;
 }
 
 /* BOTTONI */
 button{
 width:100%;
-padding:10px;
+padding:8px;
 margin-top:6px;
 border:none;
 border-radius:8px;
@@ -121,7 +126,7 @@ background:#2e7d32;
 color:white;
 }
 
-h1,h2,p{
+h1,h2{
 text-align:center;
 margin:6px 0;
 }
@@ -145,7 +150,13 @@ margin:6px 0;
 <div class="container" style="position:relative">
 <h1>HCP PRO</h1>
 
-<button onclick="logout()" style="position:absolute;top:8px;right:8px;width:auto;padding:4px 8px;font-size:11px;">
+<button onclick="logout()" style="
+position:absolute;
+top:6px;
+right:6px;
+width:auto;
+padding:3px 6px;
+font-size:10px;">
 Logout
 </button>
 </div>
@@ -158,6 +169,7 @@ Logout
 <button onclick="changeSelectedSD(-0.1)">−</button>
 <button onclick="changeSelectedSD(0.1)">+</button>
 </div>
+
 </div>
 </div>
 
@@ -190,6 +202,12 @@ let lastSimulatedList=null
 let stbValue=36
 let selectedIndex=null
 
+/* ✅ SERVICE WORKER */
+if ('serviceWorker' in navigator) {
+navigator.serviceWorker.register('sw.js')
+}
+
+/* LOGIN */
 function register(){
 localStorage.setItem("u_"+user.value,btoa(pass.value))
 localStorage.setItem("lastUser",user.value)
@@ -222,8 +240,8 @@ for(let i=0;i<20;i++){
 let el=document.createElement("input")
 el.type="number"
 el.step="0.1"
-el.id="g"+i
 
+el.id="g"+i
 el.onclick=()=>selectSD(i)
 el.oninput=update
 
@@ -233,12 +251,14 @@ load()
 update()
 }
 
+/* SELEZIONE */
 function selectSD(i){
 selectedIndex=i
 document.querySelectorAll("#grid input").forEach(el=>el.classList.remove("selectedSD"))
 document.getElementById("g"+i).classList.add("selectedSD")
 }
 
+/* MODIFICA */
 function changeSelectedSD(delta){
 if(selectedIndex===null) return
 let el=document.getElementById("g"+selectedIndex)
@@ -251,6 +271,7 @@ el.value=val.toFixed(1)
 update()
 }
 
+/* STB */
 function changeSTB(d){
 stbValue+=d
 if(stbValue<20)stbValue=20
@@ -258,6 +279,7 @@ if(stbValue>45)stbValue=45
 sim.innerText=stbValue
 }
 
+/* DATI */
 function getFull(){
 let arr=[]
 for(let i=0;i<20;i++){
@@ -267,12 +289,14 @@ arr.push(v!==""?parseFloat(v):null)
 return arr
 }
 
+/* HCP */
 function calcHCP(list){
 let sorted=list.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
 return top8.reduce((a,b)=>a+b,0)/8
 }
 
+/* UPDATE */
 function update(){
 let full=getFull()
 let clean=full.filter(v=>v!==null)
@@ -304,6 +328,7 @@ save()
 draw(full)
 }
 
+/* GRAFICO */
 function draw(list){
 let clean=list.filter(v=>v!==null)
 if(clean.length===0) return
@@ -327,6 +352,7 @@ responsive:true
 })
 }
 
+/* SIMULA */
 function simula(){
 let full=getFull()
 let base=full.filter(v=>v!==null)
@@ -348,27 +374,23 @@ draw(newList)
 
 function conferma(){
 if(!lastSimulatedList) return
-
 lastState=getFull()
-
 for(let i=0;i<20;i++){
 document.getElementById("g"+i).value = lastSimulatedList[i] ?? ""
 }
-
 lastSimulatedList=null
 update()
 }
 
 function undo(){
 if(!lastState) return
-
 for(let i=0;i<20;i++){
 document.getElementById("g"+i).value = lastState[i] ?? ""
 }
-
 update()
 }
 
+/* STORAGE */
 function save(){
 for(let i=0;i<20;i++){
 localStorage.setItem(userCorrente+"_g"+i,document.getElementById("g"+i).value)
