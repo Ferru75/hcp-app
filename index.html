@@ -4,7 +4,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>HCP PRO</title>
 
 <!-- ✅ PWA -->
@@ -27,86 +26,81 @@ background:white;
 margin:4px;
 border-radius:10px;
 padding:8px;
-  
-<p style="font-size:12px;">
-Inserisci i tuoi ultimi risultati SD (li trovi sui siti della Federgolf o Gesgolf) dal più vecchio al più recente
-</p>
-
 }
 
-/* LAYOUT */
+/* layout */
 .mainRow{
 display:flex;
 gap:4px;
 align-items:center;
 }
 
-/* ✅ GRID SUPER COMPATTA */
+/* ✅ GRID COMPATTA */
 .grid{
 flex:1;
 display:grid;
-grid-template-columns:repeat(4, 1fr); /* ✅ 4 per riga */
-gap:3px;
+grid-template-columns:repeat(4, 1fr);
+gap:2px;
 }
-
 
 .grid input{
-font-size:10px;
-height:22px;
-padding:1px;
+font-size:9px;
+height:20px;
+padding:0;
+margin:0;
 text-align:center;
-border-radius:4px;
-border:1px solid #bbb;
+border-radius:3px;
+border:1px solid #aaa;
+box-sizing:border-box;
 }
 
-
-/* SELEZIONE */
+/* selezione */
 .selectedSD{
 border:2px solid orange;
 background:#fff3cd;
 }
 
-/* TOP 8 */
+/* top 8 */
 .top8{
 background:#c8e6c9;
 }
 
-/* ✅ CONTROLLER PICCOLO */
+/* controller */
 #sdController{
 display:flex;
 flex-direction:column;
-gap:5px;
+gap:4px;
 }
 
 #sdController button{
-width:34px;
-height:34px;
-font-size:16px;
+width:32px;
+height:32px;
+font-size:15px;
 border-radius:6px;
 background:#2e7d32;
 color:white;
 border:none;
 }
 
-/* HCP */
+/* hcp */
 .big{
 font-size:32px;
 text-align:center;
 font-weight:bold;
 }
 
-/* SIMULAZIONE */
+/* simulazione */
 #simBox{
 display:flex;
 justify-content:center;
 align-items:center;
 gap:10px;
-margin:8px 0;
+margin:6px 0;
 }
 
 #simBox button{
-width:36px;
-height:36px;
+width:34px;
+height:34px;
 border-radius:50%;
 background:#2e7d32;
 color:white;
@@ -114,7 +108,7 @@ border:none;
 }
 
 #sim{
-font-size:20px;
+font-size:18px;
 font-weight:bold;
 background:#ff9800;
 color:white;
@@ -122,10 +116,10 @@ padding:5px 10px;
 border-radius:6px;
 }
 
-/* BOTTONI */
+/* bottoni */
 button{
 width:100%;
-padding:8px;
+padding:7px;
 margin-top:6px;
 border:none;
 border-radius:8px;
@@ -133,9 +127,9 @@ background:#2e7d32;
 color:white;
 }
 
-h1,h2{
+p{
+font-size:11px;
 text-align:center;
-margin:6px 0;
 }
 </style>
 </head>
@@ -155,21 +149,21 @@ margin:6px 0;
 <div id="app" class="hidden">
 
 <div class="container" style="position:relative">
-<h1>HCP PRO</h1>
+<h2>HCP PRO</h2>
 
-<button onclick="logout()" style="
-position:absolute;
-top:6px;
-right:6px;
-width:auto;
-padding:3px 6px;
-font-size:10px;">
+<button onclick="logout()" style="position:absolute;top:5px;right:5px;width:auto;padding:3px 6px;font-size:10px;">
 Logout
 </button>
 </div>
 
 <div class="container">
+
+<p>
+Inserisci i tuoi ultimi risultati SD (li trovi sui siti della Federgolf o Gesgolf) dal più vecchio al più recente
+</p>
+
 <div class="mainRow">
+
 <div class="grid" id="grid"></div>
 
 <div id="sdController">
@@ -185,6 +179,7 @@ Logout
 </div>
 
 <div class="container">
+
 <div id="simBox">
 <button onclick="changeSTB(-1)">−</button>
 <div id="sim">36</div>
@@ -194,6 +189,7 @@ Logout
 <button onclick="simula()">Simula gara</button>
 <button onclick="conferma()">✅ Conferma risultato</button>
 <button onclick="undo()">↩ Torna indietro</button>
+
 </div>
 
 <div class="container">
@@ -209,7 +205,7 @@ let lastSimulatedList=null
 let stbValue=36
 let selectedIndex=null
 
-/* ✅ SERVICE WORKER */
+/* ✅ PWA */
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('sw.js')
 }
@@ -241,14 +237,15 @@ app.classList.remove("hidden")
 init()
 }
 
+/* INIT */
 function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
 let el=document.createElement("input")
 el.type="number"
 el.step="0.1"
-
 el.id="g"+i
+
 el.onclick=()=>selectSD(i)
 el.oninput=update
 
@@ -258,22 +255,29 @@ load()
 update()
 }
 
-/* SELEZIONE */
+/* ✅ SELEZIONE FIXATA */
 function selectSD(i){
 selectedIndex=i
+
 document.querySelectorAll("#grid input").forEach(el=>el.classList.remove("selectedSD"))
-document.getElementById("g"+i).classList.add("selectedSD")
+
+let el=document.getElementById("g"+i)
+el.classList.add("selectedSD")
+el.focus()
 }
 
-/* MODIFICA */
+/* ✅ MODIFICA FIXATA */
 function changeSelectedSD(delta){
 if(selectedIndex===null) return
+
 let el=document.getElementById("g"+selectedIndex)
+
 let val=parseFloat(el.value)
 if(isNaN(val)) val=0
+
 val+=delta
-if(val<0) val=0
-if(val>60) val=60
+val=Math.max(0,Math.min(60,val))
+
 el.value=val.toFixed(1)
 update()
 }
@@ -283,7 +287,9 @@ function changeSTB(d){
 stbValue+=d
 if(stbValue<20)stbValue=20
 if(stbValue>45)stbValue=45
+
 sim.innerText=stbValue
+updateSimColor()
 }
 
 /* DATI */
@@ -303,7 +309,7 @@ let top8=sorted.slice(0,8)
 return top8.reduce((a,b)=>a+b,0)/8
 }
 
-/* UPDATE */
+/* ✅ UPDATE */
 function update(){
 let full=getFull()
 let clean=full.filter(v=>v!==null)
@@ -333,6 +339,35 @@ break
 
 save()
 draw(full)
+updateSimColor()
+}
+
+/* ✅ COLORI SIMULAZIONE */
+function updateSimColor(){
+
+let full=getFull()
+let base=full.filter(v=>v!==null)
+if(base.length<8) return
+
+let oldHCP=calcHCP(base)
+
+let sd=(36-stbValue)+oldHCP
+
+let newList=full.slice()
+newList.shift()
+newList.push(sd)
+
+let newHCP=calcHCP(newList.filter(v=>v!==null))
+
+if(newHCP > oldHCP){
+sim.style.background="#e53935" /* rosso */
+}
+else if(Math.abs(newHCP-oldHCP)<0.01){
+sim.style.background="#ff9800" /* arancione */
+}
+else{
+sim.style.background="#2e7d32" /* verde */
+}
 }
 
 /* GRAFICO */
@@ -352,10 +387,7 @@ borderColor:"green",
 fill:false
 }]
 },
-options:{
-plugins:{legend:{display:false}},
-responsive:true
-}
+options:{plugins:{legend:{display:false}}}
 })
 }
 
@@ -366,6 +398,7 @@ let base=full.filter(v=>v!==null)
 if(base.length<8)return
 
 let old=calcHCP(base)
+
 let sd=(36-stbValue)+old
 
 let newList=full.slice()
@@ -376,24 +409,31 @@ lastSimulatedList=newList
 
 let next=calcHCP(newList.filter(v=>v!==null))
 hcp.innerText=next.toFixed(2)
+
 draw(newList)
 }
 
+/* CONFERMA */
 function conferma(){
 if(!lastSimulatedList) return
 lastState=getFull()
+
 for(let i=0;i<20;i++){
 document.getElementById("g"+i).value = lastSimulatedList[i] ?? ""
 }
+
 lastSimulatedList=null
 update()
 }
 
+/* UNDO */
 function undo(){
 if(!lastState) return
+
 for(let i=0;i<20;i++){
 document.getElementById("g"+i).value = lastState[i] ?? ""
 }
+
 update()
 }
 
@@ -414,3 +454,4 @@ if(v) document.getElementById("g"+i).value=v
 
 </body>
 </html>
+``
