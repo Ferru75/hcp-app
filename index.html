@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HCP PRO</title>
 
-<!-- ✅ PWA CORRETTA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2e7d32">
 
@@ -28,12 +27,26 @@ border-radius:10px;
 padding:6px;
 }
 
-/* ✅ TITOLO */
+/* titolo */
 .title{
 text-align:center;
-font-size:30px;
+font-size:32px;
 font-weight:bold;
-margin:6px 0;
+margin:8px 0;
+}
+
+/* logout FIX */
+.logoutBtn{
+position:absolute;
+top:8px;
+right:8px;
+padding:6px 10px;
+font-size:12px;
+border-radius:8px;
+background:#2e7d32;
+color:white;
+border:none;
+width:auto;
 }
 
 /* layout */
@@ -43,7 +56,7 @@ gap:4px;
 align-items:center;
 }
 
-/* ✅ GRIGLIA CORRETTA */
+/* grid */
 .grid{
 flex:1;
 display:grid;
@@ -51,19 +64,13 @@ grid-template-columns:repeat(4, 1fr);
 gap:2px;
 }
 
-/* ✅ SD PERFETTI */
+/* sd */
 .grid input{
 font-size:11px;
 height:34px;
-padding:0;
-margin:0;
 text-align:center;
-
 border-radius:6px;
 border:1px solid #999;
-
-width:100%;
-box-sizing:border-box;
 }
 
 /* selezione */
@@ -72,12 +79,12 @@ border:2px solid orange;
 background:#fff3cd;
 }
 
-/* top 8 */
+/* top8 */
 .top8{
 background:#c8e6c9;
 }
 
-/* ✅ CONTROLLER BLOCCATO (FIX VERO) */
+/* controller */
 #sdController{
 width:34px;
 flex-shrink:0;
@@ -87,63 +94,57 @@ gap:4px;
 }
 
 #sdController button{
-width:100%;
 height:32px;
 font-size:14px;
-border-radius:6px;
-background:#2e7d32;
-color:white;
-border:none;
 }
 
-/* hcp */
+/* ✅ HCP PIÙ GRANDE */
 .big{
-font-size:32px;
+font-size:42px;
 text-align:center;
 font-weight:bold;
 }
 
-/* simulazione */
+/* ✅ STB */
 #simBox{
 display:flex;
 justify-content:center;
 align-items:center;
 gap:10px;
-margin:6px 0;
+margin:10px 0;
 }
 
 #simBox button{
-width:34px;
-height:34px;
+width:40px;
+height:40px;
 border-radius:50%;
-background:#2e7d32;
-color:white;
-border:none;
+font-size:18px;
 }
 
 #sim{
-font-size:18px;
-font-weight:bold;
-background:#ff9800;
+font-size:22px;
+padding:6px 14px;
+border-radius:8px;
 color:white;
-padding:5px 10px;
-border-radius:6px;
 }
 
-/* bottoni */
+/* ✅ BOTTONI GRANDI */
 button{
 width:100%;
-padding:7px;
-margin-top:6px;
+padding:12px;
+margin-top:8px;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:#2e7d32;
 color:white;
+font-size:16px;
 }
 
-p{
-font-size:11px;
+/* testo sopra */
+.desc{
+font-size:13px;
 text-align:center;
+margin-bottom:6px;
 }
 </style>
 </head>
@@ -164,34 +165,24 @@ text-align:center;
 
 <div class="container" style="position:relative">
 <h1 class="title">HCP PRO</h1>
-
-<button onclick="logout()" style="
-position:absolute;
-top:6px;
-right:6px;
-padding:6px 12px;
-font-size:13px;
-border-radius:8px;">
-Logout
-</button>
+<button class="logoutBtn" onclick="logout()">Logout</button>
 </div>
 
 <div class="container">
 
-<p>
-Inserisci i tuoi ultimi risultati SD (li trovi sui siti della Federgolf o Gesgolf) dal più vecchio al più recente
+<p class="desc">
+Inserisci i tuoi ultimi 20 risultati SD (score differential - li trovi su Federgolf) dal più vecchio al più recente. Clicca dentro il bottone e modifica con i tasti a destra.
 </p>
 
 <div class="mainRow">
-
 <div class="grid" id="grid"></div>
 
 <div id="sdController">
 <button onclick="changeSelectedSD(-0.1)">−</button>
 <button onclick="changeSelectedSD(0.1)">+</button>
 </div>
-
 </div>
+
 </div>
 
 <div class="container">
@@ -225,12 +216,11 @@ let lastSimulatedList=null
 let stbValue=36
 let selectedIndex=null
 
-/* ✅ SERVICE WORKER */
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('sw.js')
 }
 
-/* LOGIN */
+/* login */
 function register(){
 localStorage.setItem("u_"+user.value,btoa(pass.value))
 localStorage.setItem("lastUser",user.value)
@@ -240,14 +230,12 @@ start()
 
 function login(){
 if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
-localStorage.setItem("lastUser",user.value)
 userCorrente=user.value
 start()
 }else alert("Credenziali errate")
 }
 
 function logout(){
-localStorage.removeItem("lastUser")
 location.reload()
 }
 
@@ -257,6 +245,7 @@ app.classList.remove("hidden")
 init()
 }
 
+/* init */
 function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
@@ -264,13 +253,10 @@ let el=document.createElement("input")
 el.type="number"
 el.step="0.1"
 el.id="g"+i
-
 el.onclick=()=>selectSD(i)
 el.oninput=update
-
 grid.appendChild(el)
 }
-load()
 update()
 }
 
@@ -302,21 +288,9 @@ update()
 /* stb */
 function changeSTB(d){
 stbValue+=d
-if(stbValue<20)stbValue=20
-if(stbValue>45)stbValue=45
-
+stbValue=Math.max(20,Math.min(45,stbValue))
 sim.innerText=stbValue
 updateSimColor()
-}
-
-/* dati */
-function getFull(){
-let arr=[]
-for(let i=0;i<20;i++){
-let v=document.getElementById("g"+i).value
-arr.push(v!==""?parseFloat(v):null)
-}
-return arr
 }
 
 /* hcp */
@@ -326,25 +300,48 @@ let top8=sorted.slice(0,8)
 return top8.reduce((a,b)=>a+b,0)/8
 }
 
+/* ✅ grafico SOLO top 8 ordinati */
+function getTop8Ordered(list){
+
+let clean=list.filter(v=>v!==null)
+let sorted=clean.slice().sort((a,b)=>a-b)
+let best=sorted.slice(0,8)
+
+let result=[]
+
+list.forEach(v=>{
+if(best.includes(v)){
+result.push(v)
+best.splice(best.indexOf(v),1)
+}
+})
+
+return result
+}
+
 /* update */
 function update(){
-let full=getFull()
-let clean=full.filter(v=>v!==null)
+
+let list=[]
+for(let i=0;i<20;i++){
+let v=document.getElementById("g"+i).value
+list.push(v?parseFloat(v):null)
+}
+
+let clean=list.filter(v=>v!==null)
 
 if(clean.length<8){
 hcp.innerText="--"
 return
 }
 
-let h=calcHCP(clean)
-hcp.innerText=h.toFixed(2)
+hcp.innerText=calcHCP(clean).toFixed(2)
 
+/* highlight top8 */
 document.querySelectorAll("input").forEach(i=>i.classList.remove("top8"))
+let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
 
-let sorted=clean.slice().sort((a,b)=>a-b)
-let top8=sorted.slice(0,8)
-
-top8.forEach(val=>{
+sorted.forEach(val=>{
 for(let i=0;i<20;i++){
 let el=document.getElementById("g"+i)
 if(parseFloat(el.value)===val && !el.classList.contains("top8")){
@@ -354,91 +351,79 @@ break
 }
 })
 
-save()
-draw(full)
+draw(getTop8Ordered(list))
 updateSimColor()
+}
+
+/* grafico */
+function draw(data){
+
+if(window.chart)window.chart.destroy()
+
+window.chart=new Chart(grafico,{
+type:'line',
+data:{
+labels:data.map((_,i)=>i+1),
+datasets:[{
+data:data,
+borderColor:"green",
+fill:false
+}]
+}
+})
 }
 
 /* colori */
 function updateSimColor(){
-let full=getFull()
-let base=full.filter(v=>v!==null)
-if(base.length<8) return
 
-let oldHCP=calcHCP(base)
-let sd=(36-stbValue)+oldHCP
+let list=[]
+for(let i=0;i<20;i++){
+let v=document.getElementById("g"+i).value
+list.push(v?parseFloat(v):null)
+}
 
-let newList=full.slice()
+let clean=list.filter(v=>v!==null)
+if(clean.length<8) return
+
+let oldH=calcHCP(clean)
+let sd=(36-stbValue)+oldH
+
+let newList=list.slice()
 newList.shift()
 newList.push(sd)
 
-let newHCP=calcHCP(newList.filter(v=>v!==null))
+let newH=calcHCP(newList.filter(v=>v!==null))
 
-if(newHCP > oldHCP){
-sim.style.background="#e53935"
-}else if(Math.abs(newHCP-oldHCP)<0.01){
-sim.style.background="#ff9800"
-}else{
-sim.style.background="#2e7d32"
-}
-}
-
-/* grafico */
-function draw(list){
-let clean=list.filter(v=>v!==null)
-if(clean.length===0) return
-
-if(window.chart)window.chart.destroy()
-
-window.chart=new Chart(document.getElementById("grafico"),{
-type:'line',
-data:{
-labels:clean.map((_,i)=>i+1),
-datasets:[{
-data:clean,
-borderColor:"green",
-fill:false
-}]
-},
-options:{plugins:{legend:{display:false}}}
-})
+if(newH>oldH) sim.style.background="#e53935"
+else if(Math.abs(newH-oldH)<0.01) sim.style.background="#ff9800"
+else sim.style.background="#2e7d32"
 }
 
 /* simula */
 function simula(){
-let full=getFull()
-let base=full.filter(v=>v!==null)
-if(base.length<8)return
 
-let old=calcHCP(base)
-let sd=(36-stbValue)+old
-
-let newList=full.slice()
-newList.shift()
-newList.push(sd)
-
-lastSimulatedList=newList
-
-let next=calcHCP(newList.filter(v=>v!==null))
-hcp.innerText=next.toFixed(2)
-
-draw(newList)
-}
-
-/* conferma */
-function conferma(){
-if(!lastSimulatedList) return
-lastState=getFull()
-
+let list=[]
 for(let i=0;i<20;i++){
-document.getElementById("g"+i).value = lastSimulatedList[i] ?? ""
+let v=document.getElementById("g"+i).value
+list.push(v?parseFloat(v):null)
 }
 
-lastSimulatedList=null
-update()
+let clean=list.filter(v=>v!==null)
+if(clean.length<8)return
+
+lastState=list.slice()
+
+let sd=(36-stbValue)+calcHCP(clean)
+
+list.shift()
+list.push(sd)
+
+lastSimulatedList=list
+
+draw(getTop8Ordered(list))
 }
 
-/* undo */
+/* ✅ UNDO FIXATO */
 function undo(){
 if(!lastState) return
 
@@ -447,20 +432,6 @@ document.getElementById("g"+i).value = lastState[i] ?? ""
 }
 
 update()
-}
-
-/* storage */
-function save(){
-for(let i=0;i<20;i++){
-localStorage.setItem(userCorrente+"_g"+i,document.getElementById("g"+i).value)
-}
-}
-
-function load(){
-for(let i=0;i<20;i++){
-let v=localStorage.getItem(userCorrente+"_g"+i)
-if(v) document.getElementById("g"+i).value=v
-}
 }
 </script>
 
