@@ -4,72 +4,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>HCP PRO</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2e7d32">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{font-family:Arial;background:#eef7ee;margin:0}
 .container{background:white;margin:4px;border-radius:12px;padding:8px}
+.hidden{display:none}
 
 .title{text-align:center;font-size:34px;font-weight:bold}
 
 .logoutBtn{
 position:absolute;top:6px;right:6px;
 padding:6px 10px;border-radius:8px;
-background:#2e7d32;color:white;border:none;width:auto;
+background:#2e7d32;color:white;border:none;
 }
-
-/* testo */
-.desc{text-align:center;font-size:14px}
 
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 
 .sdBtn{
 height:42px;border-radius:8px;border:1px solid #999;
-display:flex;align-items:center;justify-content:center;background:#f3f3f3;
+display:flex;align-items:center;justify-content:center;
+background:#f3f3f3;
 }
 
-.top8{background:#c8e6c9;}
+.top8{background:#c8e6c9}
 
 /* hcp */
 .big{
 font-size:56px;height:90px;
-display:flex;align-items:center;justify-content:center;font-weight:bold;
+display:flex;align-items:center;justify-content:center;
+font-weight:bold;
 }
-
-.delta{text-align:center;font-size:18px;font-weight:bold}
-.green{color:#2e7d32}
-.red{color:#e53935}
 
 /* stb */
 #simBox{display:flex;justify-content:center;gap:15px;margin:10px}
 #simBox button{width:46px;height:46px;border-radius:50%}
-#sim{font-size:22px;padding:8px 16px;border-radius:10px;color:white;background:#ff9800}
 
 button{
 width:100%;padding:14px;margin-top:8px;
-border:none;border-radius:10px;background:#2e7d32;
-color:white;font-size:18px;
+border:none;border-radius:10px;
+background:#2e7d32;color:white;font-size:18px;
 }
 
-/* campo */
+/* select */
 .selectorRow{display:flex;gap:6px}
 .selectorRow select{flex:1;padding:6px;border-radius:8px}
-
-.infoRow{display:flex;gap:6px;margin-top:6px}
-.infoRow button{flex:1;background:#607d8b;padding:8px;font-size:14px}
-
-.chartTitle{text-align:center;font-size:16px;margin-bottom:6px}
 </style>
 </head>
 
 <body>
+
+<!-- LOGIN -->
+<div id="loginBox" class="container">
+<h2 class="title">HCP PRO</h2>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<button onclick="register()">Crea account</button>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
 
 <div class="container" style="position:relative">
 <h1 class="title">HCP PRO</h1>
@@ -77,31 +77,24 @@ color:white;font-size:18px;
 </div>
 
 <div class="container">
-<p class="desc">
-Inserisci i tuoi ultimi 20 SD (Federgolf)<br>
-Tap = −0.1 • Tieni premuto = + veloce
-</p>
+<p>Inserisci i tuoi ultimi 20 SD</p>
 <div class="grid" id="grid"></div>
 </div>
 
+<!-- CAMPI -->
 <div class="container">
 <div class="selectorRow">
 <select id="campo"></select>
 <select id="tee"></select>
 </div>
-
-<div class="infoRow">
-<button onclick="modCR()">CR: <span id="crVal">--</span></button>
-<button onclick="modSlope()">Slope: <span id="slopeVal">--</span></button>
-</div>
 </div>
 
 <div class="container">
 <div id="hcp" class="big">--</div>
-<div id="delta" class="delta"></div>
 </div>
 
 <div class="container">
+
 <div id="simBox">
 <button onclick="changeSTB(-1)">−</button>
 <div id="sim">36</div>
@@ -111,11 +104,13 @@ Tap = −0.1 • Tieni premuto = + veloce
 <button onclick="simula()">Simula gara</button>
 <button onclick="conferma()">✅ Conferma</button>
 <button onclick="undo()">↩ Undo</button>
+
 </div>
 
 <div class="container">
-<div class="chartTitle">Trend ultimi 8 risultati validi</div>
 <canvas id="grafico"></canvas>
+</div>
+
 </div>
 
 <script>
@@ -123,129 +118,138 @@ let data=new Array(20).fill(null)
 let simulatedData=null
 let lastState=null
 let stbValue=36
+let userCorrente=null
 
-let userCorrente="hcp_user"
+let campiData=[]
 
-/* SAVE / LOAD */
-function save(){
-localStorage.setItem(userCorrente,JSON.stringify(data))
+/* LOGIN */
+function register(){
+localStorage.setItem("u_"+user.value,btoa(pass.value))
+userCorrente=user.value
+start()
 }
-function load(){
-let s=localStorage.getItem(userCorrente)
-if(s) data=JSON.parse(s)
+
+function login(){
+if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
+userCorrente=user.value
+start()
+}else alert("Errore login")
 }
 
-/* logout */
 function logout(){
-localStorage.removeItem(userCorrente)
+userCorrente=null
 location.reload()
 }
 
+function start(){
+loginBox.classList.add("hidden")
+app.classList.remove("hidden")
+init()
+load()
+update()
+}
+
+/* CAMPI */
+async function loadCampi(){
+let res=await fetch("campi.json")
+campiData=await res.json()
+
+campo.innerHTML=""
+campiData.forEach((c,i)=>{
+let o=document.createElement("option")
+o.value=i
+o.textContent=c.nome
+campo.appendChild(o)
+})
+}
+
+campo.addEventListener("change",()=>{
+tee.innerHTML=""
+let t=campiData[campo.value].tee
+Object.keys(t).forEach(k=>{
+let o=document.createElement("option")
+o.value=k
+o.textContent=k
+tee.appendChild(o)
+})
+})
+
 /* SD */
 function init(){
+grid.innerHTML=""
 for(let i=0;i<20;i++){
 
 let el=document.createElement("div")
 el.className="sdBtn"
 el.innerText="--"
 
-let interval=null
-
 el.onclick=()=>changeSD(i,-0.1)
 
-function start(){
-stop()
-let speed=100
-interval=setInterval(()=>{
-changeSD(i,0.1)
-if(speed>20){
-speed-=20
-clearInterval(interval)
-interval=setInterval(()=>changeSD(i,0.1),speed)
-}
-},speed)
-}
-function stop(){if(interval){clearInterval(interval);interval=null}}
+let interval
 
-el.onmousedown=start
-el.onmouseup=stop
-el.onmouseleave=stop
-el.ontouchstart=start
-el.ontouchend=stop
+el.onmousedown=()=>{
+interval=setInterval(()=>changeSD(i,0.1),50)
+}
+el.onmouseup=()=>clearInterval(interval)
+el.onmouseleave=()=>clearInterval(interval)
+el.ontouchstart=()=>{
+interval=setInterval(()=>changeSD(i,0.1),50)
+}
+el.ontouchend=()=>clearInterval(interval)
 
 grid.appendChild(el)
 }
-}
-
-function changeSD(i,d){
-if(data[i]===null)data[i]=0
-data[i]+=d
-data[i]=Math.round(data[i]*10)/10
-data[i]=Math.max(0,Math.min(60,data[i]))
-update()
-}
-
-/* HCP */
-function calcHCP(list){
-let s=list.slice().sort((a,b)=>a-b).slice(0,8)
-return s.reduce((a,b)=>a+b,0)/8
-}
-
-function getTop8(list){
-let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
-let r=[]
-list.forEach(v=>{
-if(sorted.includes(v)){
-r.push(v)
-sorted.splice(sorted.indexOf(v),1)
-}
-})
-return r
+loadCampi()
 }
 
 /* UPDATE */
 function update(){
 
-let base=simulatedData?simulatedData:data
+let base=simulatedData||data
 let clean=base.filter(v=>v!==null)
 
 hcp.innerText=clean.length<8?"--":calcHCP(clean).toFixed(2)
 
-/* delta */
-if(simulatedData){
-let oldH=calcHCP(data.filter(v=>v!==null))
-let newH=calcHCP(clean)
-let diff=(newH-oldH).toFixed(2)
+/* top8 FIX MIGLIORE */
+document.querySelectorAll(".sdBtn").forEach(el=>el.classList.remove("top8"))
 
-delta.innerText=(diff>0?"+":"")+diff
-delta.className="delta "+(diff>0?"red":(diff<0?"green":""))
-}else{
-delta.innerText=""
-}
+let sorted=[...clean].sort((a,b)=>a-b).slice(0,8)
 
-/* SD display */
-document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText=data[i]!==null?data[i].toFixed(1):"--"
-el.classList.remove("top8")
-})
-
-/* top8 verde */
-let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
+let used=[]
 
 sorted.forEach(val=>{
 for(let i=0;i<base.length;i++){
-if(base[i]===val){
+if(base[i]===val && !used.includes(i)){
 grid.children[i].classList.add("top8")
+used.push(i)
 break
 }
 }
+})
+
+document.querySelectorAll(".sdBtn").forEach((el,i)=>{
+el.innerText=data[i]!=null?data[i].toFixed(1):"--"
 })
 
 draw(base)
 save()
 }
 
-/* SIMULA */
+/* HCP */
+function calcHCP(list){
+let s=[...list].sort((a,b)=>a-b).slice(0,8)
+return s.reduce((a,b)=>a+b,0)/8
+}
+
+/* SD CHANGE */
+function changeSD(i,d){
+if(data[i]==null)data[i]=0
+data[i]+=d
+data[i]=Math.round(data[i]*10)/10
+update()
+}
+
+/* SIMULAZIONE */
 function simula(){
 let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
@@ -257,7 +261,6 @@ simulatedData=[...data.slice(1),sd]
 update()
 }
 
-/* CONFERMA */
 function conferma(){
 if(!simulatedData)return
 data=[...simulatedData]
@@ -265,7 +268,6 @@ simulatedData=null
 update()
 }
 
-/* UNDO */
 function undo(){
 if(!lastState)return
 data=[...lastState]
@@ -280,33 +282,36 @@ stbValue=Math.max(0,Math.min(70,stbValue))
 sim.innerText=stbValue
 }
 
-/* GRAFICO ORIGINALE */
-function draw(list){
+/* STORAGE */
+function save(){
+localStorage.setItem(userCorrente+"_data",JSON.stringify(data))
+}
+function load(){
+let d=localStorage.getItem(userCorrente+"_data")
+if(d)data=JSON.parse(d)
+}
 
+/* GRAFICO */
+function draw(list){
 let clean=list.filter(v=>v!==null)
-if(clean.length===0)return
+if(clean.length<8)return
+
+let sorted=[...clean].sort((a,b)=>a-b).slice(0,8)
 
 if(window.chart)window.chart.destroy()
-
-let top8=getTop8(list)
 
 window.chart=new Chart(grafico,{
 type:'line',
 data:{
-labels:top8.map((_,i)=>i+1),
+labels:sorted.map((_,i)=>i+1),
 datasets:[{
-label:"Trend ultimi 8 risultati validi",
-data:top8,
-borderColor:"green",
-fill:false
+label:"Trend migliori 8",
+data:sorted,
+borderColor:"green"
 }]
 }
 })
 }
-
-init()
-load()
-update()
 </script>
 
 </body>
