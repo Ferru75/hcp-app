@@ -32,7 +32,6 @@ font-weight:bold;
 margin:8px 0;
 }
 
-/* ✅ logout FIX */
 .logoutBtn{
 position:absolute;
 top:6px;
@@ -46,6 +45,13 @@ border:none;
 width:auto;
 }
 
+/* descrizione */
+.desc{
+font-size:14px;
+text-align:center;
+margin-bottom:6px;
+}
+
 /* grid */
 .grid{
 display:grid;
@@ -53,7 +59,6 @@ grid-template-columns:repeat(4,1fr);
 gap:4px;
 }
 
-/* bottoni SD */
 .sdBtn{
 height:40px;
 border-radius:8px;
@@ -63,25 +68,20 @@ display:flex;
 align-items:center;
 justify-content:center;
 background:#f3f3f3;
-transition:0.1s;
-}
-
-.sdBtn:active{
-transform:scale(0.92);
 }
 
 .top8{
 background:#c8e6c9;
 }
 
-/* hcp */
+/* HCP */
 .big{
 font-size:48px;
 text-align:center;
 font-weight:bold;
 }
 
-/* stb */
+/* STB */
 #simBox{
 display:flex;
 justify-content:center;
@@ -115,11 +115,6 @@ background:#2e7d32;
 color:white;
 font-size:18px;
 }
-
-.desc{
-font-size:14px;
-text-align:center;
-}
 </style>
 </head>
 
@@ -131,10 +126,14 @@ text-align:center;
 </div>
 
 <div class="container">
+
 <p class="desc">
+Inserisci i tuoi ultimi 20 risultati SD (score differential - Federgolf).<br>
 Tap = −0.1 • Tieni premuto = +0.1 (accelerato)
 </p>
+
 <div class="grid" id="grid"></div>
+
 </div>
 
 <div class="container">
@@ -164,13 +163,6 @@ let data = new Array(20).fill(null)
 let stbValue = 36
 let lastState = null
 
-function vibrate(type){
-if(!navigator.vibrate) return
-if(type==="tap") navigator.vibrate(10)
-if(type==="hold") navigator.vibrate(5)
-}
-
-/* ✅ INIT PRO */
 function init(){
 grid.innerHTML=""
 
@@ -180,29 +172,30 @@ let el=document.createElement("div")
 el.className="sdBtn"
 el.innerText="--"
 
-/* TAP = -0.1 */
-el.onclick=()=>{
-changeSD(i,-0.1)
-vibrate("tap")
-}
-
-/* HOLD = +0.1 accelerato */
 let interval=null
 let speed=150
 
+/* TAP = -0.1 */
+el.onclick=()=>{
+changeSD(i,-0.1)
+}
+
+/* HOLD = + con controllo corretto */
 function startHold(){
+
+stopHold()
+
 speed=150
+
 interval=setInterval(()=>{
 changeSD(i,0.1)
-vibrate("hold")
 
 /* ✅ accelerazione */
-if(speed>50){
+if(speed>60){
 speed-=10
 clearInterval(interval)
 interval=setInterval(()=>{
 changeSD(i,0.1)
-vibrate("hold")
 },speed)
 }
 
@@ -210,7 +203,10 @@ vibrate("hold")
 }
 
 function stopHold(){
+if(interval){
 clearInterval(interval)
+interval=null
+}
 }
 
 /* mouse */
@@ -229,6 +225,7 @@ grid.appendChild(el)
 init()
 
 function changeSD(i,delta){
+
 if(data[i]===null) data[i]=0
 
 data[i]+=delta
@@ -244,7 +241,6 @@ let s=list.slice().sort((a,b)=>a-b).slice(0,8)
 return s.reduce((a,b)=>a+b,0)/8
 }
 
-/* top8 cronologico */
 function getTop8(list){
 let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
 let res=[]
@@ -267,9 +263,8 @@ hcp.innerText="--"
 hcp.innerText=calcHCP(clean).toFixed(2)
 }
 
-/* UI */
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText = data[i]?.toFixed(1) ?? "--"
+el.innerText = data[i]!==null ? data[i].toFixed(1) : "--"
 el.classList.remove("top8")
 })
 
@@ -288,7 +283,6 @@ draw(getTop8(clean))
 updateSimColor()
 }
 
-/* grafico */
 function draw(d){
 if(d.length===0) return
 if(window.chart)window.chart.destroy()
@@ -297,16 +291,11 @@ window.chart=new Chart(grafico,{
 type:'line',
 data:{
 labels:d.map((_,i)=>i+1),
-datasets:[{
-data:d,
-borderColor:"green",
-fill:false
-}]
+datasets:[{data:d,borderColor:"green"}]
 }
 })
 }
 
-/* stb */
 function changeSTB(d){
 stbValue+=d
 stbValue=Math.max(20,Math.min(45,stbValue))
@@ -314,7 +303,6 @@ sim.innerText=stbValue
 updateSimColor()
 }
 
-/* simula */
 function simula(){
 let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
@@ -329,7 +317,6 @@ data.push(sd)
 update()
 }
 
-/* undo */
 function undo(){
 if(!lastState) return
 data=[...lastState]
@@ -340,7 +327,6 @@ function conferma(){
 lastState=null
 }
 
-/* colori */
 function updateSimColor(){
 let clean=data.filter(v=>v!==null)
 if(clean.length<8) return
@@ -362,4 +348,3 @@ else sim.style.background="#2e7d32"
 
 </body>
 </html>
-``
