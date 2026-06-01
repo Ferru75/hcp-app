@@ -7,80 +7,19 @@
 
 <title>HCP PRO</title>
 
-<!-- ✅ FIX PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2e7d32">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-font-family:Arial;
-background:#eef7ee;
-margin:0;
-}
+body{font-family:Arial;background:#eef7ee;margin:0}
+.container{background:white;margin:4px;border-radius:12px;padding:8px}
 
-.container{
-background:white;
-margin:4px;
-border-radius:12px;
-padding:8px;
-}
+.title{text-align:center;font-size:34px;font-weight:bold}
+.logoutBtn{position:absolute;top:6px;right:6px;padding:6px 10px;font-size:12px;border-radius:8px;background:#2e7d32;color:white;border:none;width:auto}
 
-.title{
-text-align:center;
-font-size:34px;
-font-weight:bold;
-margin:8px 0;
-}
-
-.logoutBtn{
-position:absolute;
-top:6px;
-right:6px;
-padding:6px 10px;
-font-size:12px;
-border-radius:8px;
-background:#2e7d32;
-color:white;
-border:none;
-width:auto;
-}
-
-.selectorRow{
-display:flex;
-gap:6px;
-}
-
-.selectorRow select{
-flex:1;
-padding:6px;
-border-radius:8px;
-}
-
-.infoRow{
-display:flex;
-gap:6px;
-margin-top:6px;
-}
-
-.infoRow button{
-flex:1;
-padding:8px;
-font-size:14px;
-background:#607d8b;
-}
-
-.desc{
-font-size:14px;
-text-align:center;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:4px;
-}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 
 .sdBtn{
 height:42px;
@@ -93,35 +32,28 @@ background:#f3f3f3;
 }
 
 .top8{background:#c8e6c9;}
-
 .big{
 font-size:56px;
 font-weight:bold;
+height:90px;
 display:flex;
 align-items:center;
 justify-content:center;
-height:90px;
 }
 
-#simBox{
-display:flex;
-justify-content:center;
-gap:15px;
-margin:10px;
+/* DELTA */
+.delta{
+text-align:center;
+font-size:18px;
+font-weight:bold;
 }
 
-#simBox button{
-width:46px;height:46px;
-border-radius:50%;
-}
+.green{color:#2e7d32}
+.red{color:#e53935}
 
-#sim{
-font-size:22px;
-padding:8px 16px;
-border-radius:10px;
-color:white;
-background:#ff9800;
-}
+#simBox{display:flex;justify-content:center;gap:15px;margin:10px}
+#simBox button{width:46px;height:46px;border-radius:50%}
+#sim{font-size:22px;padding:8px 16px;border-radius:10px;color:white;background:#ff9800}
 
 button{
 width:100%;
@@ -133,6 +65,12 @@ background:#2e7d32;
 color:white;
 font-size:18px;
 }
+
+.selectorRow{display:flex;gap:6px}
+.selectorRow select{flex:1;padding:6px;border-radius:8px}
+
+.infoRow{display:flex;gap:6px;margin-top:6px}
+.infoRow button{flex:1;background:#607d8b;padding:8px;font-size:14px}
 </style>
 </head>
 
@@ -144,9 +82,6 @@ font-size:18px;
 </div>
 
 <div class="container">
-<p class="desc">
-Tap = -0.1 • Tieni premuto = incremento veloce
-</p>
 <div class="grid" id="grid"></div>
 </div>
 
@@ -164,6 +99,7 @@ Tap = -0.1 • Tieni premuto = incremento veloce
 
 <div class="container">
 <div id="hcp" class="big">--</div>
+<div id="delta" class="delta"></div>
 </div>
 
 <div class="container">
@@ -186,17 +122,18 @@ Tap = -0.1 • Tieni premuto = incremento veloce
 
 <script>
 let data = new Array(20).fill(null)
-let stbValue = 36
+let simulatedData = null
 let lastState = null
+let stbValue = 36
 
 let campiData=[]
 let currentCR=null
 let currentSlope=null
 
-/* ✅ CARICA CAMPI */
+/* CAMPI */
 async function loadCampi(){
-let res = await fetch("campi.json")
-campiData = await res.json()
+let res=await fetch("campi.json")
+campiData=await res.json()
 
 campo.innerHTML='<option value="">Campo</option>'
 
@@ -208,11 +145,9 @@ campo.appendChild(opt)
 })
 }
 
-/* campo */
 campo.addEventListener("change",()=>{
-let idx=campo.value
 tee.innerHTML=""
-
+let idx=campo.value
 if(idx==="") return
 
 let tees=campiData[idx].tee
@@ -225,35 +160,27 @@ tee.appendChild(opt)
 })
 })
 
-/* tee */
 tee.addEventListener("change",()=>{
 let c=campo.value
 let t=tee.value
 if(!c||!t) return
 
 let info=campiData[c].tee[t]
-
 currentCR=info.cr
 currentSlope=info.slope
 
-updateCRSlope()
+crVal.innerText=currentCR
+slopeVal.innerText=currentSlope
 })
 
-function updateCRSlope(){
-crVal.innerText=currentCR ?? "--"
-slopeVal.innerText=currentSlope ?? "--"
-}
-
 function modCR(){
-if(currentCR===null)return
-currentCR=parseFloat(prompt("Modifica CR",currentCR))
-updateCRSlope()
+currentCR=parseFloat(prompt("CR",currentCR))||currentCR
+crVal.innerText=currentCR
 }
 
 function modSlope(){
-if(currentSlope===null)return
-currentSlope=parseFloat(prompt("Modifica slope",currentSlope))
-updateCRSlope()
+currentSlope=parseFloat(prompt("Slope",currentSlope))||currentSlope
+slopeVal.innerText=currentSlope
 }
 
 /* SD */
@@ -265,19 +192,26 @@ el.className="sdBtn"
 el.innerText="--"
 
 let interval=null
-let speed=120
 
 el.onclick=()=>changeSD(i,-0.1)
 
+/* ✅ SUPER VELOCE */
 function start(){
+
 stop()
+
+let speed=100
+
 interval=setInterval(()=>{
 changeSD(i,0.1)
-if(speed>40){
-speed-=15
+
+/* accelerazione forte */
+if(speed>20){
+speed-=20
 clearInterval(interval)
 interval=setInterval(()=>changeSD(i,0.1),speed)
 }
+
 },speed)
 }
 
@@ -285,7 +219,6 @@ function stop(){
 if(interval){
 clearInterval(interval)
 interval=null
-speed=120
 }
 }
 
@@ -310,6 +243,7 @@ data[i]=Math.max(0,Math.min(60,data[i]))
 update()
 }
 
+/* HCP */
 function calcHCP(list){
 let s=list.slice().sort((a,b)=>a-b).slice(0,8)
 return s.reduce((a,b)=>a+b,0)/8
@@ -329,20 +263,37 @@ return r
 
 function update(){
 
-let clean=data.filter(v=>v!==null)
+let base=simulatedData?simulatedData:data
+let clean=base.filter(v=>v!==null)
 
-hcp.innerText=clean.length<8?"--":calcHCP(clean).toFixed(2)
+let real=data.filter(v=>v!==null)
+
+let h=clean.length<8?"--":calcHCP(clean).toFixed(2)
+hcp.innerText=h
+
+/* ✅ DELTA */
+if(simulatedData && real.length>=8){
+let oldH=calcHCP(real)
+let newH=calcHCP(clean)
+let diff=(newH-oldH).toFixed(2)
+
+delta.innerText=(diff>0?"+":"")+diff
+
+delta.className="delta " + (diff>0?"red":(diff<0?"green":""))
+}else{
+delta.innerText=""
+}
 
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText = data[i] !== null ? data[i].toFixed(1) : "--"
+el.innerText=data[i]!==null?data[i].toFixed(1):"--"
 el.classList.remove("top8")
 })
 
 let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
 
 sorted.forEach(val=>{
-for(let i=0;i<data.length;i++){
-if(data[i]===val){
+for(let i=0;i<base.length;i++){
+if(base[i]===val){
 grid.children[i].classList.add("top8")
 break
 }
@@ -353,10 +304,47 @@ draw(getTop8(clean))
 updateSimColor()
 }
 
-/* grafico */
+/* SIMULA */
+function simula(){
+let clean=data.filter(v=>v!==null)
+if(clean.length<8)return
+
+lastState=[...data]
+
+let sd=(36-stbValue)+calcHCP(clean)
+
+simulatedData=[...data.slice(1), sd]
+
+update()
+}
+
+/* CONFERMA */
+function conferma(){
+if(!simulatedData) return
+data=[...simulatedData]
+simulatedData=null
+update()
+}
+
+/* UNDO */
+function undo(){
+if(!lastState) return
+data=[...lastState]
+simulatedData=null
+update()
+}
+
+/* STB */
+function changeSTB(d){
+stbValue+=d
+stbValue=Math.max(20,Math.min(45,stbValue))
+sim.innerText=stbValue
+updateSimColor()
+}
+
+/* GRAFICO */
 function draw(d){
 if(d.length===0)return
-
 if(window.chart)window.chart.destroy()
 
 window.chart=new Chart(grafico,{
@@ -372,51 +360,14 @@ borderColor:"green"
 })
 }
 
-/* ✅ FIX SHIFT CORRETTO */
-function simula(){
-
-let clean=data.filter(v=>v!==null)
-if(clean.length<8)return
-
-lastState=[...data]
-
-let sd=(36-stbValue)+calcHCP(clean)
-
-/* ✅ SHIFT PERFETTO */
-data=[...data.slice(1), sd]
-
-update()
-}
-
-function undo(){
-if(!lastState)return
-data=[...lastState]
-update()
-}
-
-function conferma(){
-lastState=null
-}
-
-function changeSTB(d){
-stbValue+=d
-stbValue=Math.max(20,Math.min(45,stbValue))
-sim.innerText=stbValue
-updateSimColor()
-}
-
+/* COLORI */
 function updateSimColor(){
-let clean=data.filter(v=>v!==null)
+let base=simulatedData?simulatedData:data
+let clean=base.filter(v=>v!==null)
 if(clean.length<8)return
 
-let old=calcHCP(clean)
-let sd=(36-stbValue)+old
-
-let newList=[...data]
-newList.shift()
-newList.push(sd)
-
-let newH=calcHCP(newList.filter(v=>v!==null))
+let old=calcHCP(data.filter(v=>v!==null))
+let newH=calcHCP(clean)
 
 if(newH>old) sim.style.background="#e53935"
 else if(Math.abs(newH-old)<0.01) sim.style.background="#ff9800"
