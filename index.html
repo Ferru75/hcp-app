@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>HCP PRO</title>
 
 <link rel="manifest" href="manifest.json">
@@ -18,6 +19,7 @@ background:#eef7ee;
 margin:0;
 }
 
+/* layout */
 .container{
 background:white;
 margin:4px;
@@ -32,6 +34,7 @@ font-weight:bold;
 margin:8px 0;
 }
 
+/* logout FIX */
 .logoutBtn{
 position:absolute;
 top:6px;
@@ -45,11 +48,25 @@ border:none;
 width:auto;
 }
 
-/* descrizione */
+/* select campo */
+.selectorRow{
+display:flex;
+gap:8px;
+margin-bottom:8px;
+}
+
+.selectorRow select{
+flex:1;
+padding:8px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+/* testo */
 .desc{
 font-size:14px;
 text-align:center;
-margin-bottom:6px;
 }
 
 /* grid */
@@ -60,7 +77,7 @@ gap:4px;
 }
 
 .sdBtn{
-height:40px;
+height:42px;
 border-radius:8px;
 border:1px solid #999;
 font-size:13px;
@@ -76,12 +93,15 @@ background:#c8e6c9;
 
 /* HCP */
 .big{
-font-size:48px;
-text-align:center;
+font-size:56px;
 font-weight:bold;
+display:flex;
+align-items:center;
+justify-content:center;
+height:80px;
 }
 
-/* STB */
+/* stb */
 #simBox{
 display:flex;
 justify-content:center;
@@ -126,14 +146,19 @@ font-size:18px;
 </div>
 
 <div class="container">
-
 <p class="desc">
-Inserisci i tuoi ultimi 20 risultati SD (score differential - Federgolf).<br>
-Tap = −0.1 • Tieni premuto = +0.1 (accelerato)
+Inserisci i tuoi ultimi 20 SD.<br>
+Tap = −0.1 • Tieni premuto = + veloce
 </p>
-
 <div class="grid" id="grid"></div>
+</div>
 
+<!-- ✅ CAMPI DINAMICI -->
+<div class="container">
+<div class="selectorRow">
+<select id="campo"></select>
+<select id="tee"></select>
+</div>
 </div>
 
 <div class="container">
@@ -162,10 +187,49 @@ Tap = −0.1 • Tieni premuto = +0.1 (accelerato)
 let data = new Array(20).fill(null)
 let stbValue = 36
 let lastState = null
+let campiData = []
 
+function vibrate(t){
+if(!navigator.vibrate) return
+navigator.vibrate(t==="tap"?10:5)
+}
+
+/* ✅ CARICA CAMPI.JSON */
+async function loadCampi(){
+try{
+let res = await fetch("campi.json")
+campiData = await res.json()
+
+campo.innerHTML='<option value="">Campo</option>'
+
+campiData.forEach((c,i)=>{
+let opt=document.createElement("option")
+opt.value=i
+opt.textContent=c.nome
+campo.appendChild(opt)
+})
+
+}catch(e){
+console.error("Errore campi.json",e)
+}
+}
+
+/* cambio campo → aggiorna tee */
+campo.addEventListener("change",()=>{
+let idx=campo.value
+tee.innerHTML=""
+
+if(idx==="") return
+
+campiData[idx].tee.forEach(t=>{
+let opt=document.createElement("option")
+opt.textContent=t
+tee.appendChild(opt)
+})
+})
+
+/* INIT SD */
 function init(){
-grid.innerHTML=""
-
 for(let i=0;i<20;i++){
 
 let el=document.createElement("div")
@@ -173,32 +237,30 @@ el.className="sdBtn"
 el.innerText="--"
 
 let interval=null
-let speed=150
+let speed=120
 
-/* TAP = -0.1 */
+/* tap */
 el.onclick=()=>{
 changeSD(i,-0.1)
+vibrate("tap")
 }
 
-/* HOLD = + con controllo corretto */
+/* hold veloce */
 function startHold(){
-
 stopHold()
-
-speed=150
+speed=120
 
 interval=setInterval(()=>{
 changeSD(i,0.1)
+vibrate("hold")
 
-/* ✅ accelerazione */
-if(speed>60){
-speed-=10
+if(speed>40){
+speed-=15
 clearInterval(interval)
 interval=setInterval(()=>{
 changeSD(i,0.1)
 },speed)
 }
-
 },speed)
 }
 
@@ -209,12 +271,9 @@ interval=null
 }
 }
 
-/* mouse */
 el.onmousedown=startHold
 el.onmouseup=stopHold
 el.onmouseleave=stopHold
-
-/* mobile */
 el.ontouchstart=startHold
 el.ontouchend=stopHold
 
@@ -223,15 +282,13 @@ grid.appendChild(el)
 }
 
 init()
+loadCampi()
 
-function changeSD(i,delta){
-
+function changeSD(i,d){
 if(data[i]===null) data[i]=0
-
-data[i]+=delta
+data[i]+=d
 data[i]=Math.round(data[i]*10)/10
 data[i]=Math.max(0,Math.min(60,data[i]))
-
 update()
 }
 
@@ -257,14 +314,10 @@ function update(){
 
 let clean=data.filter(v=>v!==null)
 
-if(clean.length<8){
-hcp.innerText="--"
-}else{
-hcp.innerText=calcHCP(clean).toFixed(2)
-}
+hcp.innerText=clean.length<8?"--":calcHCP(clean).toFixed(2)
 
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText = data[i]!==null ? data[i].toFixed(1) : "--"
+el.innerText=data[i]!==null?data[i].toFixed(1):"--"
 el.classList.remove("top8")
 })
 
@@ -283,19 +336,26 @@ draw(getTop8(clean))
 updateSimColor()
 }
 
+/* grafico */
 function draw(d){
-if(d.length===0) return
+if(d.length===0)return
+
 if(window.chart)window.chart.destroy()
 
 window.chart=new Chart(grafico,{
 type:'line',
 data:{
 labels:d.map((_,i)=>i+1),
-datasets:[{data:d,borderColor:"green"}]
+datasets:[{
+label:"Trend ultimi 8 risultati validi per handicap",
+data:d,
+borderColor:"green"
+}]
 }
 })
 }
 
+/* stb */
 function changeSTB(d){
 stbValue+=d
 stbValue=Math.max(20,Math.min(45,stbValue))
@@ -303,6 +363,7 @@ sim.innerText=stbValue
 updateSimColor()
 }
 
+/* simula */
 function simula(){
 let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
@@ -317,8 +378,9 @@ data.push(sd)
 update()
 }
 
+/* undo */
 function undo(){
-if(!lastState) return
+if(!lastState)return
 data=[...lastState]
 update()
 }
@@ -327,9 +389,10 @@ function conferma(){
 lastState=null
 }
 
+/* colori */
 function updateSimColor(){
 let clean=data.filter(v=>v!==null)
-if(clean.length<8) return
+if(clean.length<8)return
 
 let old=calcHCP(clean)
 let sd=(36-stbValue)+old
