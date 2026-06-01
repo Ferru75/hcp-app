@@ -9,96 +9,121 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:Arial;background:#e8f5e9;margin:0}
-.container{background:white;margin:10px;border-radius:14px;padding:14px}
+body{
+font-family:Arial;
+background:#eef7ee;
+margin:0;
+}
 
-/* layout principale */
+/* LAYOUT */
+.container{
+background:white;
+margin:6px;
+border-radius:12px;
+padding:10px;
+}
+
+.hidden{display:none;}
+
 .mainRow{
 display:flex;
-gap:10px;
+gap:6px;
+align-items:center;
 }
 
 /* GRID SD */
 .grid{
 flex:1;
 display:grid;
-grid-template-columns:repeat(5,1fr);
-gap:6px;
+grid-template-columns:repeat(4, 1fr);
+gap:4px;
 }
 
-/* SD piccoli */
 .grid input{
-font-size:13px;
-padding:4px;
-height:32px;
+font-size:12px;
+height:28px;
 text-align:center;
-border-radius:6px;
+border-radius:5px;
 border:1px solid #ccc;
 }
 
-/* selezione */
+/* SELEZIONE */
 .selectedSD{
-border:2px solid #ff9800;
+border:2px solid orange;
 background:#fff3cd;
 }
 
-/* CONTROLLO DESTRA */
+/* TOP 8 */
+.top8{
+background:#c8e6c9;
+}
+
+/* CONTROLLER */
 #sdController{
 display:flex;
 flex-direction:column;
-justify-content:center;
-gap:10px;
+gap:6px;
 }
 
 #sdController button{
-width:45px;
-height:45px;
-font-size:20px;
+width:40px;
+height:40px;
+font-size:18px;
 border-radius:8px;
 background:#2e7d32;
 color:white;
 border:none;
 }
 
-/* STABLEFORD */
+/* HCP */
+.big{
+font-size:36px;
+text-align:center;
+font-weight:bold;
+}
+
+/* SIMULAZIONE */
 #simBox{
 display:flex;
-align-items:center;
 justify-content:center;
+align-items:center;
 gap:10px;
 margin:10px 0;
 }
 
 #simBox button{
-width:45px;
-height:45px;
-font-size:22px;
+width:40px;
+height:40px;
 border-radius:50%;
 background:#2e7d32;
 color:white;
 border:none;
+font-size:20px;
 }
 
 #sim{
-font-size:24px;
+font-size:22px;
 font-weight:bold;
 background:#ff9800;
 color:white;
-padding:8px;
+padding:6px 12px;
 border-radius:8px;
 }
 
-.big{font-size:40px;text-align:center;font-weight:bold}
-.top8{background:#c8e6c9}
-
+/* BOTTONI */
 button{
-margin-top:6px;
 width:100%;
 padding:10px;
-background:green;
-color:white;
+margin-top:6px;
 border:none;
-border-radius:10px
+border-radius:8px;
+background:#2e7d32;
+color:white;
+}
+
+h1,h2,p{
+text-align:center;
+margin:6px 0;
 }
 </style>
 </head>
@@ -107,11 +132,9 @@ border-radius:10px
 
 <!-- LOGIN -->
 <div id="loginBox" class="container">
-<h2 style="text-align:center;">HCP PRO</h2>
-
+<h2>HCP PRO</h2>
 <input id="user" placeholder="Username">
 <input id="pass" type="password" placeholder="Password">
-
 <button onclick="login()">Login</button>
 <button onclick="register()">Crea account</button>
 </div>
@@ -120,41 +143,22 @@ border-radius:10px
 <div id="app" class="hidden">
 
 <div class="container" style="position:relative">
+<h1>HCP PRO</h1>
 
-<h1 style="text-align:center;">HCP PRO</h1>
-
-<p style="text-align:center">
-Clicca su ogni singolo box ed inserisci i tuoi ultimi 20 SD a partire dal più vecchio
-</p>
-
-<button onclick="logout()" style="
-position:absolute;
-top:10px;
-right:10px;
-padding:4px 8px;
-font-size:11px;
-width:auto;
-background:#2e7d32;">
+<button onclick="logout()" style="position:absolute;top:8px;right:8px;width:auto;padding:4px 8px;font-size:11px;">
 Logout
 </button>
-
 </div>
 
 <div class="container">
-
 <div class="mainRow">
-
-<!-- GRID -->
 <div class="grid" id="grid"></div>
 
-<!-- CONTROLLER -->
 <div id="sdController">
 <button onclick="changeSelectedSD(-0.1)">−</button>
 <button onclick="changeSelectedSD(0.1)">+</button>
 </div>
-
 </div>
-
 </div>
 
 <div class="container">
@@ -162,7 +166,6 @@ Logout
 </div>
 
 <div class="container">
-
 <div id="simBox">
 <button onclick="changeSTB(-1)">−</button>
 <div id="sim">36</div>
@@ -172,9 +175,6 @@ Logout
 <button onclick="simula()">Simula gara</button>
 <button onclick="conferma()">✅ Conferma risultato</button>
 <button onclick="undo()">↩ Torna indietro</button>
-
-<div id="out"></div>
-
 </div>
 
 <div class="container">
@@ -184,14 +184,12 @@ Logout
 </div>
 
 <script>
-
 let userCorrente=null
 let lastState=null
 let lastSimulatedList=null
 let stbValue=36
 let selectedIndex=null
 
-// LOGIN
 function register(){
 localStorage.setItem("u_"+user.value,btoa(pass.value))
 localStorage.setItem("lastUser",user.value)
@@ -218,11 +216,9 @@ app.classList.remove("hidden")
 init()
 }
 
-// INIT
 function init(){
 grid.innerHTML=""
 for(let i=0;i<20;i++){
-
 let el=document.createElement("input")
 el.type="number"
 el.step="0.1"
@@ -237,47 +233,31 @@ load()
 update()
 }
 
-// SELEZIONE
 function selectSD(i){
 selectedIndex=i
-
-document.querySelectorAll("#grid input").forEach(el=>{
-el.classList.remove("selectedSD")
-})
-
+document.querySelectorAll("#grid input").forEach(el=>el.classList.remove("selectedSD"))
 document.getElementById("g"+i).classList.add("selectedSD")
 }
 
-// MODIFICA
 function changeSelectedSD(delta){
-
-if(selectedIndex===null)return
-
+if(selectedIndex===null) return
 let el=document.getElementById("g"+selectedIndex)
-
 let val=parseFloat(el.value)
 if(isNaN(val)) val=0
-
 val+=delta
-
 if(val<0) val=0
 if(val>60) val=60
-
 el.value=val.toFixed(1)
-
 update()
 }
 
-// STABLEFORD
 function changeSTB(d){
 stbValue+=d
 if(stbValue<20)stbValue=20
 if(stbValue>45)stbValue=45
-
 sim.innerText=stbValue
 }
 
-// DATI
 function getFull(){
 let arr=[]
 for(let i=0;i<20;i++){
@@ -287,16 +267,13 @@ arr.push(v!==""?parseFloat(v):null)
 return arr
 }
 
-// HCP
 function calcHCP(list){
 let sorted=list.slice().sort((a,b)=>a-b)
 let top8=sorted.slice(0,8)
 return top8.reduce((a,b)=>a+b,0)/8
 }
 
-// UPDATE
 function update(){
-
 let full=getFull()
 let clean=full.filter(v=>v!==null)
 
@@ -316,7 +293,7 @@ let top8=sorted.slice(0,8)
 top8.forEach(val=>{
 for(let i=0;i<20;i++){
 let el=document.getElementById("g"+i)
-if(parseFloat(el.value)===val&&!el.classList.contains("top8")){
+if(parseFloat(el.value)===val && !el.classList.contains("top8")){
 el.classList.add("top8")
 break
 }
@@ -327,46 +304,36 @@ save()
 draw(full)
 }
 
-// GRAFICO
 function draw(list){
-
 let clean=list.filter(v=>v!==null)
-let sorted=clean.slice().sort((a,b)=>a-b)
-let top8=sorted.slice(0,8)
-
-let result=[]
-list.forEach(v=>{
-if(top8.includes(v)){
-result.push(v)
-top8.splice(top8.indexOf(v),1)
-}
-})
+if(clean.length===0) return
 
 if(window.chart)window.chart.destroy()
 
-window.chart=new Chart(grafico,{
+window.chart=new Chart(document.getElementById("grafico"),{
 type:'line',
 data:{
-labels:result.map((_,i)=>i+1),
+labels:clean.map((_,i)=>i+1),
 datasets:[{
-data:result,
-borderColor:"green"
+data:clean,
+borderColor:"green",
+fill:false
 }]
+},
+options:{
+plugins:{legend:{display:false}},
+responsive:true
 }
 })
 }
 
-// SIMULA
 function simula(){
-
 let full=getFull()
 let base=full.filter(v=>v!==null)
 if(base.length<8)return
 
 let old=calcHCP(base)
-let stb=stbValue
-
-let sd=(36-stb)+old
+let sd=(36-stbValue)+old
 
 let newList=full.slice()
 newList.shift()
@@ -375,24 +342,45 @@ newList.push(sd)
 lastSimulatedList=newList
 
 let next=calcHCP(newList.filter(v=>v!==null))
-
 hcp.innerText=next.toFixed(2)
 draw(newList)
 }
 
-// STORAGE
+function conferma(){
+if(!lastSimulatedList) return
+
+lastState=getFull()
+
+for(let i=0;i<20;i++){
+document.getElementById("g"+i).value = lastSimulatedList[i] ?? ""
+}
+
+lastSimulatedList=null
+update()
+}
+
+function undo(){
+if(!lastState) return
+
+for(let i=0;i<20;i++){
+document.getElementById("g"+i).value = lastState[i] ?? ""
+}
+
+update()
+}
+
 function save(){
 for(let i=0;i<20;i++){
-localStorage.setItem(userCorrente+"_g"+i,
-document.getElementById("g"+i).value)
-}}
+localStorage.setItem(userCorrente+"_g"+i,document.getElementById("g"+i).value)
+}
+}
 
 function load(){
 for(let i=0;i<20;i++){
 let v=localStorage.getItem(userCorrente+"_g"+i)
-if(v)document.getElementById("g"+i).value=v
-}}
-
+if(v) document.getElementById("g"+i).value=v
+}
+}
 </script>
 
 </body>
