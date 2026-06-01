@@ -17,8 +17,11 @@ body{font-family:Arial;background:#eef7ee;margin:0}
 .container{background:white;margin:4px;border-radius:12px;padding:8px}
 
 .title{text-align:center;font-size:34px;font-weight:bold}
-.logoutBtn{position:absolute;top:6px;right:6px;padding:6px 10px;font-size:12px;border-radius:8px;background:#2e7d32;color:white;border:none;width:auto}
 
+/* descrizione */
+.desc{text-align:center;font-size:14px}
+
+/* grid */
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 
 .sdBtn{
@@ -31,30 +34,27 @@ justify-content:center;
 background:#f3f3f3;
 }
 
-.top8{background:#c8e6c9;}
+/* HCP */
 .big{
 font-size:56px;
-font-weight:bold;
 height:90px;
 display:flex;
 align-items:center;
 justify-content:center;
-}
-
-/* DELTA */
-.delta{
-text-align:center;
-font-size:18px;
 font-weight:bold;
 }
 
+/* delta */
+.delta{text-align:center;font-size:18px;font-weight:bold}
 .green{color:#2e7d32}
 .red{color:#e53935}
 
+/* STB */
 #simBox{display:flex;justify-content:center;gap:15px;margin:10px}
 #simBox button{width:46px;height:46px;border-radius:50%}
 #sim{font-size:22px;padding:8px 16px;border-radius:10px;color:white;background:#ff9800}
 
+/* bottoni */
 button{
 width:100%;
 padding:14px;
@@ -66,25 +66,33 @@ color:white;
 font-size:18px;
 }
 
+/* selettori */
 .selectorRow{display:flex;gap:6px}
 .selectorRow select{flex:1;padding:6px;border-radius:8px}
 
 .infoRow{display:flex;gap:6px;margin-top:6px}
 .infoRow button{flex:1;background:#607d8b;padding:8px;font-size:14px}
+
+/* titolo grafico */
+.chartTitle{text-align:center;font-size:16px;margin-bottom:6px}
 </style>
 </head>
 
 <body>
 
-<div class="container" style="position:relative">
+<div class="container">
 <h1 class="title">HCP PRO</h1>
-<button class="logoutBtn">Logout</button>
 </div>
 
 <div class="container">
+<p class="desc">
+Inserisci i tuoi ultimi 20 SD (dal più vecchio al più recente)<br>
+Tap = −0.1 • Tieni premuto = incremento veloce
+</p>
 <div class="grid" id="grid"></div>
 </div>
 
+<!-- CAMPI -->
 <div class="container">
 <div class="selectorRow">
 <select id="campo"></select>
@@ -103,7 +111,6 @@ font-size:18px;
 </div>
 
 <div class="container">
-
 <div id="simBox">
 <button onclick="changeSTB(-1)">−</button>
 <div id="sim">36</div>
@@ -113,10 +120,10 @@ font-size:18px;
 <button onclick="simula()">Simula gara</button>
 <button onclick="conferma()">✅ Conferma</button>
 <button onclick="undo()">↩ Undo</button>
-
 </div>
 
 <div class="container">
+<div class="chartTitle">Progresso Handicap</div>
 <canvas id="grafico"></canvas>
 </div>
 
@@ -126,11 +133,13 @@ let simulatedData = null
 let lastState = null
 let stbValue = 36
 
+let hcpHistory = []
+
+/* CAMPI */
 let campiData=[]
 let currentCR=null
 let currentSlope=null
 
-/* CAMPI */
 async function loadCampi(){
 let res=await fetch("campi.json")
 campiData=await res.json()
@@ -163,7 +172,7 @@ tee.appendChild(opt)
 tee.addEventListener("change",()=>{
 let c=campo.value
 let t=tee.value
-if(!c||!t) return
+if(!c || !t) return
 
 let info=campiData[c].tee[t]
 currentCR=info.cr
@@ -174,11 +183,13 @@ slopeVal.innerText=currentSlope
 })
 
 function modCR(){
+if(currentCR===null) return
 currentCR=parseFloat(prompt("CR",currentCR))||currentCR
 crVal.innerText=currentCR
 }
 
 function modSlope(){
+if(currentSlope===null) return
 currentSlope=parseFloat(prompt("Slope",currentSlope))||currentSlope
 slopeVal.innerText=currentSlope
 }
@@ -195,17 +206,14 @@ let interval=null
 
 el.onclick=()=>changeSD(i,-0.1)
 
-/* ✅ SUPER VELOCE */
+/* super veloce */
 function start(){
-
 stop()
-
 let speed=100
 
 interval=setInterval(()=>{
 changeSD(i,0.1)
 
-/* accelerazione forte */
 if(speed>20){
 speed-=20
 clearInterval(interval)
@@ -236,7 +244,7 @@ init()
 loadCampi()
 
 function changeSD(i,d){
-if(data[i]===null)data[i]=0
+if(data[i]===null) data[i]=0
 data[i]+=d
 data[i]=Math.round(data[i]*10)/10
 data[i]=Math.max(0,Math.min(60,data[i]))
@@ -249,59 +257,33 @@ let s=list.slice().sort((a,b)=>a-b).slice(0,8)
 return s.reduce((a,b)=>a+b,0)/8
 }
 
-function getTop8(list){
-let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
-let r=[]
-list.forEach(v=>{
-if(sorted.includes(v)){
-r.push(v)
-sorted.splice(sorted.indexOf(v),1)
-}
-})
-return r
-}
-
+/* UPDATE */
 function update(){
 
-let base=simulatedData?simulatedData:data
-let clean=base.filter(v=>v!==null)
+let base = simulatedData ? simulatedData : data
+let clean = base.filter(v=>v!==null)
+let real = data.filter(v=>v!==null)
 
-let real=data.filter(v=>v!==null)
+hcp.innerText = clean.length<8 ? "--" : calcHCP(clean).toFixed(2)
 
-let h=clean.length<8?"--":calcHCP(clean).toFixed(2)
-hcp.innerText=h
-
-/* ✅ DELTA */
+/* delta */
 if(simulatedData && real.length>=8){
 let oldH=calcHCP(real)
 let newH=calcHCP(clean)
 let diff=(newH-oldH).toFixed(2)
 
 delta.innerText=(diff>0?"+":"")+diff
-
-delta.className="delta " + (diff>0?"red":(diff<0?"green":""))
+delta.className="delta "+(diff>0?"red":(diff<0?"green":""))
 }else{
 delta.innerText=""
 }
 
+/* aggiorna SD */
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
-el.innerText=data[i]!==null?data[i].toFixed(1):"--"
-el.classList.remove("top8")
+el.innerText=data[i]!==null ? data[i].toFixed(1) : "--"
 })
 
-let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
-
-sorted.forEach(val=>{
-for(let i=0;i<base.length;i++){
-if(base[i]===val){
-grid.children[i].classList.add("top8")
-break
-}
-}
-})
-
-draw(getTop8(clean))
-updateSimColor()
+draw()
 }
 
 /* SIMULA */
@@ -320,9 +302,17 @@ update()
 
 /* CONFERMA */
 function conferma(){
+
 if(!simulatedData) return
+
 data=[...simulatedData]
 simulatedData=null
+
+let clean=data.filter(v=>v!==null)
+if(clean.length>=8){
+hcpHistory.push(calcHCP(clean))
+}
+
 update()
 }
 
@@ -334,44 +324,32 @@ simulatedData=null
 update()
 }
 
-/* STB */
+/* STB 0-70 */
 function changeSTB(d){
 stbValue+=d
-stbValue=Math.max(20,Math.min(45,stbValue))
+stbValue=Math.max(0,Math.min(70,stbValue))
 sim.innerText=stbValue
-updateSimColor()
 }
 
-/* GRAFICO */
-function draw(d){
-if(d.length===0)return
+/* GRAFICO PROGRESSO */
+function draw(){
+
+if(hcpHistory.length===0) return
+
 if(window.chart)window.chart.destroy()
 
 window.chart=new Chart(grafico,{
 type:'line',
 data:{
-labels:d.map((_,i)=>i+1),
+labels:hcpHistory.map((_,i)=>"Gara "+(i+1)),
 datasets:[{
-label:"Trend ultimi 8 risultati validi per handicap",
-data:d,
-borderColor:"green"
+label:"Progresso Handicap",
+data:hcpHistory,
+borderColor:"blue",
+fill:false
 }]
 }
 })
-}
-
-/* COLORI */
-function updateSimColor(){
-let base=simulatedData?simulatedData:data
-let clean=base.filter(v=>v!==null)
-if(clean.length<8)return
-
-let old=calcHCP(data.filter(v=>v!==null))
-let newH=calcHCP(clean)
-
-if(newH>old) sim.style.background="#e53935"
-else if(Math.abs(newH-old)<0.01) sim.style.background="#ff9800"
-else sim.style.background="#2e7d32"
 }
 </script>
 
