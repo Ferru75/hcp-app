@@ -18,16 +18,13 @@ background:#eef7ee;
 margin:0;
 }
 
-.hidden{display:none;}
-
 .container{
 background:white;
-margin:3px;
-border-radius:10px;
-padding:6px;
+margin:4px;
+border-radius:12px;
+padding:8px;
 }
 
-/* titolo */
 .title{
 text-align:center;
 font-size:34px;
@@ -43,83 +40,61 @@ right:6px;
 padding:6px 10px;
 font-size:12px;
 border-radius:8px;
-width:auto;
 }
 
-/* layout */
-.mainRow{
-display:flex;
-gap:4px;
-align-items:center;
-}
-
-/* ✅ FIX: 4 colonne REALI */
+/* grid PRO */
 .grid{
-flex:1;
 display:grid;
-grid-template-columns:repeat(4, minmax(0,1fr));
-gap:2px;
+grid-template-columns:repeat(4,1fr);
+gap:4px;
 }
 
-/* SD */
-.grid input{
-font-size:11px;
-height:36px;
-text-align:center;
-border-radius:6px;
+/* ✅ BOTTONI AL POSTO INPUT */
+.sdBtn{
+height:40px;
+border-radius:8px;
 border:1px solid #999;
-width:100%;
+font-size:13px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#f3f3f3;
+transition:0.1s;
 }
 
-/* selezione */
-.selectedSD{
-border:2px solid orange;
+.sdBtn:active{
+transform:scale(0.92);
 }
 
-/* top8 */
 .top8{
 background:#c8e6c9;
 }
 
-/* controller */
-#sdController{
-width:32px;
-flex-shrink:0;
-display:flex;
-flex-direction:column;
-gap:4px;
-}
-
-#sdController button{
-height:32px;
-}
-
-/* ✅ HCP grande */
+/* HCP */
 .big{
-font-size:44px;
+font-size:48px;
 text-align:center;
 font-weight:bold;
 }
 
-/* STB */
+/* stb */
 #simBox{
 display:flex;
 justify-content:center;
-align-items:center;
 gap:15px;
-margin:12px 0;
+margin:10px;
 }
 
 #simBox button{
-width:44px;
-height:44px;
+width:46px;
+height:46px;
 border-radius:50%;
-font-size:18px;
+font-size:20px;
 }
 
 #sim{
-font-size:24px;
-padding:6px 16px;
+font-size:22px;
+padding:8px 16px;
 border-radius:10px;
 color:white;
 background:#ff9800;
@@ -137,7 +112,6 @@ color:white;
 font-size:18px;
 }
 
-/* testo */
 .desc{
 font-size:14px;
 text-align:center;
@@ -147,9 +121,6 @@ text-align:center;
 
 <body>
 
-<!-- APP -->
-<div id="app">
-
 <div class="container" style="position:relative">
 <h1 class="title">HCP PRO</h1>
 <button class="logoutBtn">Logout</button>
@@ -158,20 +129,11 @@ text-align:center;
 <div class="container">
 
 <p class="desc">
-Inserisci i tuoi ultimi 20 risultati SD (score differential - li trovi su Federgolf) dal più vecchio al più recente.
-<br>Clicca dentro il bottone e cambia l'SD con i tasti a destra.
+Inserisci i tuoi ultimi 20 SD. Tap = +0.1 • Tieni premuto = −0.1
 </p>
-
-<div class="mainRow">
 
 <div class="grid" id="grid"></div>
 
-<div id="sdController">
-<button onclick="changeSelectedSD(-0.1)">−</button>
-<button onclick="changeSelectedSD(0.1)">+</button>
-</div>
-
-</div>
 </div>
 
 <div class="container">
@@ -188,7 +150,7 @@ Inserisci i tuoi ultimi 20 risultati SD (score differential - li trovi su Federg
 
 <button onclick="simula()">Simula gara</button>
 <button onclick="conferma()">✅ Conferma risultato</button>
-<button onclick="undo()">↩ Torna indietro</button>
+<button onclick="undo()">↩ Undo</button>
 
 </div>
 
@@ -196,42 +158,120 @@ Inserisci i tuoi ultimi 20 risultati SD (score differential - li trovi su Federg
 <canvas id="grafico"></canvas>
 </div>
 
-</div>
-
 <script>
-let selectedIndex=null
-let stbValue=36
-let lastState=null
-let lastSimulatedList=null
+let data = new Array(20).fill(null)
+let stbValue = 36
+let lastState = null
 
+/* ✅ crea bottoni */
 function init(){
+grid.innerHTML=""
+
 for(let i=0;i<20;i++){
-let el=document.createElement("input")
-el.step="0.1"
-el.id="g"+i
-el.onclick=()=>selectSD(i)
-el.oninput=update
+
+let el=document.createElement("div")
+el.className="sdBtn"
+el.innerText="--"
+
+/* TAP (+0.1) */
+el.onclick=()=>{
+vibrate()
+changeSD(i,0.1)
+}
+
+/* LONG PRESS (-0.1) */
+let timer
+el.onmousedown=()=>timer=setTimeout(()=>changeSD(i,-0.1),400)
+el.onmouseup=()=>clearTimeout(timer)
+el.ontouchstart=()=>timer=setTimeout(()=>changeSD(i,-0.1),400)
+el.ontouchend=()=>clearTimeout(timer)
+
 grid.appendChild(el)
 }
 }
 
 init()
 
-function selectSD(i){
-selectedIndex=i
-document.querySelectorAll("#grid input").forEach(el=>el.classList.remove("selectedSD"))
-document.getElementById("g"+i).classList.add("selectedSD")
+function vibrate(){
+if(navigator.vibrate) navigator.vibrate(10)
 }
 
-/* modifica */
-function changeSelectedSD(d){
-if(selectedIndex===null) return
-let el=document.getElementById("g"+selectedIndex)
-let val=parseFloat(el.value)||0
-val+=d
-val=Math.max(0,Math.min(60,val))
-el.value=val.toFixed(1)
+function changeSD(i,delta){
+
+if(data[i]===null) data[i]=0
+
+data[i]+=delta
+data[i]=Math.max(0,Math.min(60,data[i]))
+
 update()
+}
+
+/* hcp */
+function calcHCP(list){
+let s=list.slice().sort((a,b)=>a-b).slice(0,8)
+return s.reduce((a,b)=>a+b,0)/8
+}
+
+/* top8 */
+function getTop8(list){
+let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
+let res=[]
+
+list.forEach(v=>{
+if(sorted.includes(v)){
+res.push(v)
+sorted.splice(sorted.indexOf(v),1)
+}
+})
+
+return res
+}
+
+function update(){
+
+let clean=data.filter(v=>v!==null)
+
+if(clean.length<8){
+hcp.innerText="--"
+}else{
+hcp.innerText=calcHCP(clean).toFixed(2)
+}
+
+/* aggiorna UI */
+document.querySelectorAll(".sdBtn").forEach((el,i)=>{
+el.innerText = data[i]?.toFixed(1) ?? "--"
+el.classList.remove("top8")
+})
+
+let sorted=clean.slice().sort((a,b)=>a-b).slice(0,8)
+
+sorted.forEach(val=>{
+for(let i=0;i<data.length;i++){
+if(data[i]===val){
+document.getElementsByClassName("sdBtn")[i].classList.add("top8")
+data[i]=data[i] /* evita duplicati */
+break
+}
+}
+})
+
+draw(getTop8(clean))
+updateSimColor()
+}
+
+/* grafico */
+function draw(d){
+if(d.length===0) return
+
+if(window.chart)window.chart.destroy()
+
+window.chart=new Chart(grafico,{
+type:'line',
+data:{
+labels:d.map((_,i)=>i+1),
+datasets:[{data:d,borderColor:"green"}]
+}
+})
 }
 
 /* stb */
@@ -242,124 +282,45 @@ sim.innerText=stbValue
 updateSimColor()
 }
 
-/* hcp */
-function calcHCP(list){
-let s=list.slice().sort((a,b)=>a-b).slice(0,8)
-return s.reduce((a,b)=>a+b,0)/8
-}
-
-/* top8 cronologico */
-function getTop8(list){
-let sorted=list.slice().sort((a,b)=>a-b).slice(0,8)
-let res=[]
-list.forEach(v=>{
-if(sorted.includes(v)){
-res.push(v)
-sorted.splice(sorted.indexOf(v),1)
-}
-})
-return res
-}
-
-function getList(){
-let arr=[]
-for(let i=0;i<20;i++){
-let v=document.getElementById("g"+i).value
-arr.push(v?parseFloat(v):null)
-}
-return arr
-}
-
-function update(){
-
-let list=getList()
-let clean=list.filter(v=>v!==null)
-
-if(clean.length<8){
-hcp.innerText="--"
-return
-}
-
-hcp.innerText=calcHCP(clean).toFixed(2)
-
-/* top8 highlight */
-document.querySelectorAll("input").forEach(i=>i.classList.remove("top8"))
-let s=clean.slice().sort((a,b)=>a-b).slice(0,8)
-
-s.forEach(val=>{
-for(let i=0;i<20;i++){
-let el=document.getElementById("g"+i)
-if(parseFloat(el.value)===val && !el.classList.contains("top8")){
-el.classList.add("top8")
-break
-}
-}
-})
-
-draw(getTop8(clean))
-updateSimColor()
-}
-
-function draw(data){
-if(window.chart)window.chart.destroy()
-window.chart=new Chart(grafico,{
-type:'line',
-data:{
-labels:data.map((_,i)=>i+1),
-datasets:[{data:data,borderColor:"green"}]
-}
-})
-}
-
 /* simula */
 function simula(){
 
-let list=getList()
-let clean=list.filter(v=>v!==null)
+let clean=data.filter(v=>v!==null)
 if(clean.length<8)return
 
-lastState=list.slice()
+lastState=[...data]
 
-let h=calcHCP(clean)
-let sd=(36-stbValue)+h
+let sd=(36-stbValue)+calcHCP(clean)
 
-list.shift()
-list.push(sd)
+data.shift()
+data.push(sd)
 
-lastSimulatedList=list
-
-hcp.innerText=calcHCP(list).toFixed(2)
-draw(getTop8(list))
-}
-
-/* conferma */
-function conferma(){
-if(!lastSimulatedList) return
-for(let i=0;i<20;i++){
-document.getElementById("g"+i).value = lastSimulatedList[i] ?? ""
-}
 update()
 }
 
-/* ✅ UNDO */
+/* undo */
 function undo(){
 if(!lastState) return
-for(let i=0;i<20;i++){
-document.getElementById("g"+i).value = lastState[i] ?? ""
-}
+data=[...lastState]
 update()
+}
+
+/* conferma = già fatto */
+function conferma(){
+lastState=null
 }
 
 /* colori */
 function updateSimColor(){
-let list=getList()
-let clean=list.filter(v=>v!==null)
+
+let clean=data.filter(v=>v!==null)
 if(clean.length<8) return
 
 let old=calcHCP(clean)
+
 let sd=(36-stbValue)+old
 
-let newList=list.slice()
+let newList=[...data]
 newList.shift()
 newList.push(sd)
 
@@ -373,4 +334,3 @@ else sim.style.background="#2e7d32"
 
 </body>
 </html>
-``
