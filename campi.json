@@ -49,7 +49,7 @@
 {"nome":"Dolomiti","regione":"Italia","tee":{"bianco":{"cr":72.7,"slope":130},"giallo":{"cr":71.6,"slope":127},"rosso":{"cr":73.4,"slope":132}}},
 {"nome":"Faenza Cicogne","regione":"Italia","tee":{"bianco":{"cr":68.6,"slope":119},"giallo":{"cr":67.4,"slope":116},"rosso":{"cr":70.0,"slope":114}}},
 {"nome":"Fioranello","regione":"Italia","tee":{"bianco":{"cr":70.0,"slope":129},"giallo":{"cr":69.0,"slope":127},"rosso":{"cr":72.5,"slope":129}}},
-{"nome":"Firenze Ugolino","regione":"Italia","tee":{"bianco":{"cr":70.9,"slope":133},"giallo":{"cr":67.5,"slope":125},"rosso":{"cr":69.2,"slope":119}}}
+{"nome":"Firenze Ugolino","regione":"Italia","tee":{"bianco":{"cr":70.9,"slope":133},"giallo":{"cr":67.5,"slope":125},"rosso":{"cr":69.2,"slope":119}}},
 {"nome":"Garlanda","regione":"Italia","tee":{"bianco":{"cr":72.7,"slope":138},"giallo":{"cr":72.2,"slope":137},"rosso":{"cr":73.7,"slope":134}}},
 {"nome":"GGZ Zerman","regione":"Italia","tee":{"bianco":{"cr":70.8,"slope":124},"giallo":{"cr":67.4,"slope":116},"rosso":{"cr":70.3,"slope":118}}},
 {"nome":"Globale Jesolo","regione":"Italia","tee":{"bianco":{"cr":72.4,"slope":122},"giallo":{"cr":70.7,"slope":119},"rosso":{"cr":72.0,"slope":117}}},
@@ -77,7 +77,7 @@
 {"nome":"Molinette","regione":"Italia","tee":{"bianco":{"cr":71.9,"slope":131},"giallo":{"cr":71.4,"slope":130},"rosso":{"cr":72.5,"slope":127}}},
 {"nome":"Moncalieri","regione":"Italia","tee":{"bianco":{"cr":63.7,"slope":102},"giallo":{"cr":62.7,"slope":100},"rosso":{"cr":63.6,"slope":100}}},
 {"nome":"Montecatini","regione":"Italia","tee":{"bianco":{"cr":72.1,"slope":137},"giallo":{"cr":71.2,"slope":135},"rosso":{"cr":72.2,"slope":128}}},
-{"nome":"Monteveglio","regione":"Italia","tee":{"bianco":{"cr":63.4,"slope":114},"giallo":{"cr":60.6,"slope":108},"rosso":{"cr":63.6,"slope":108}}}
+{"nome":"Monteveglio","regione":"Italia","tee":{"bianco":{"cr":63.4,"slope":114},"giallo":{"cr":60.6,"slope":108},"rosso":{"cr":63.6,"slope":108}}},
 {"nome":"Mulino Cerrione","regione":"Italia","tee":{"bianco":{"cr":69.3,"slope":132},"giallo":{"cr":68.6,"slope":121},"rosso":{"cr":71.4,"slope":123}}},
 {"nome":"Oasi di Magliano","regione":"Italia","tee":{"bianco":{"cr":72.5,"slope":130},"giallo":{"cr":71.0,"slope":128},"rosso":{"cr":71.9,"slope":120}}},
 {"nome":"Palermo","regione":"Italia","tee":{"bianco":{"cr":62.4,"slope":112},"giallo":{"cr":59.1,"slope":104},"rosso":{"cr":62.0,"slope":102}}},
@@ -102,7 +102,7 @@
 {"nome":"Roncegno","regione":"Italia","tee":{"bianco":{"cr":66.2,"slope":119},"giallo":{"cr":63.2,"slope":111},"rosso":{"cr":65.8,"slope":116}}},
 {"nome":"Rossera","regione":"Italia","tee":{"bianco":{"cr":68.4,"slope":125},"giallo":{"cr":66.4,"slope":121},"rosso":{"cr":70.8,"slope":126}}},
 {"nome":"Rovedine","regione":"Italia","tee":{"bianco":{"cr":73.0,"slope":125},"giallo":{"cr":72.3,"slope":124},"rosso":{"cr":73.5,"slope":124}}},
-{"nome":"Rovigolf","regione":"Italia","tee":{"bianco":{"cr":57.6,"slope":94},"giallo":{"cr":57.6,"slope":94},"rosso":{"cr":59.6,"slope":97}}}
+{"nome":"Rovigolf","regione":"Italia","tee":{"bianco":{"cr":57.6,"slope":94},"giallo":{"cr":57.6,"slope":94},"rosso":{"cr":59.6,"slope":97}}},
 {"nome":"Salice Terme","regione":"Italia","tee":{"bianco":{"cr":68.2,"slope":121},"giallo":{"cr":64.9,"slope":113},"rosso":{"cr":65.8,"slope":116}}},
 {"nome":"Salsomaggiore Terme","regione":"Italia","tee":{"bianco":{"cr":71.4,"slope":133},"giallo":{"cr":70.9,"slope":132},"rosso":{"cr":72.7,"slope":124}}},
 {"nome":"Saluzzo","regione":"Italia","tee":{"bianco":{"cr":72.8,"slope":132},"giallo":{"cr":72.2,"slope":132},"rosso":{"cr":73.6,"slope":126}}},
