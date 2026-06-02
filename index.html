@@ -362,9 +362,11 @@ let pairs=data
 .sort((a,b)=>a.v-b.v)
 .slice(0,8)
 
+
 pairs.forEach(p=>{
-grid.children[p.i].classList.add("top8")
+grid.children[p.i].querySelector(".sdBtn").classList.add("top8")
 })
+
 
 // UI
 document.querySelectorAll(".sdBtn").forEach((el,i)=>{
