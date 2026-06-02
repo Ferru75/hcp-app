@@ -252,48 +252,47 @@ async function init(){
 
 grid.innerHTML=""
 
+
 for(let i=0;i<20;i++){
 
-let el=document.createElement("div")
-el.className="sdBtn"
+let wrapper = document.createElement("div")
+wrapper.style.position = "relative"
 
-el.onclick=()=>changeSD(i,-0.1)
+let el = document.createElement("div")
+el.className = "sdBtn"
 
-let interval=null
+let select = document.createElement("select")
 
-function startHold(){
-stopHold()
-let speed=120
+// stile invisibile sopra bottone
+select.style.position = "absolute"
+select.style.top = 0
+select.style.left = 0
+select.style.width = "100%"
+select.style.height = "100%"
+select.style.opacity = 0
+select.style.cursor = "pointer"
 
-interval=setInterval(()=>{
-changeSD(i,0.1)
-
-if(speed>30){
-speed-=10
-clearInterval(interval)
-interval=setInterval(()=>changeSD(i,0.1),speed)
+// crea valori 0.0 - 54.0
+for(let v=0; v<=540; v++){
+  let val = (v/10).toFixed(1)
+  let opt = document.createElement("option")
+  opt.value = val
+  opt.textContent = val
+  select.appendChild(opt)
 }
 
-},speed)
+// quando selezioni
+select.onchange = (e) => {
+  data[i] = parseFloat(e.target.value)
+  update()
 }
 
-function stopHold(){
-if(interval){
-clearInterval(interval)
-interval=null
-}
+// append
+wrapper.appendChild(el)
+wrapper.appendChild(select)
+grid.appendChild(wrapper)
 }
 
-el.onmousedown=startHold
-el.onmouseup=stopHold
-el.onmouseleave=stopHold
-
-el.ontouchstart=startHold
-el.ontouchend=stopHold
-el.ontouchcancel=stopHold
-
-grid.appendChild(el)
-}
 
 await loadCampi()
 load()
