@@ -334,10 +334,25 @@ update()
 }
 
 // HCP
+
 function calcHCP(list){
-let s=list.slice().sort((a,b)=>a-b).slice(0,8)
-return s.reduce((a,b)=>a+b,0)/8
+
+let pairs = list.map((v,i)=>({v,i}))
+
+// trova migliori 8
+let best = pairs
+  .slice()
+  .sort((a,b)=>a.v-b.v)
+  .slice(0,8)
+
+// 🔥 riordina cronologicamente
+best.sort((a,b)=>a.i-b.i)
+
+let values = best.map(x=>x.v)
+
+return values.reduce((a,b)=>a+b,0)/8
 }
+
 
 // UPDATE
 function update(){
@@ -466,18 +481,69 @@ values.push(calcHCP(list.slice(0,i)))
 
 if(window.chart)window.chart.destroy()
 
-window.chart=new Chart(grafico,{
-type:'line',
-data:{
-labels:values.map((_,i)=>i+8),
-datasets:[{
-label:"Trend handicap",
-data:values,
-borderColor:"green"
-}]
-}
+
+window.chart = new Chart(grafico, {
+  type: 'line',
+  data: {
+    labels: values.map((_, i) => i + 8),
+    datasets: [{
+      label: "Trend handicap",
+      data: values,
+
+      borderColor: "#2e7d32",
+      borderWidth: 3,
+
+      // ✅ linea smooth
+      tension: 0.4,
+
+      // ✅ punti evidenziati
+      pointRadius: 5,
+      pointBackgroundColor: "#2e7d32",
+      pointBorderColor: "#fff",
+      pointBorderWidth: 2,
+
+      // ✅ hover più bello
+      pointHoverRadius: 7,
+      pointHoverBackgroundColor: "#1b5e20",
+
+      // ✅ riempimento leggero sotto
+      fill: true,
+      backgroundColor: "rgba(46,125,50,0.1)"
+    }]
+  },
+
+  options: {
+    plugins: {
+      legend: {
+        display: false   // più pulito
+      }
+    },
+
+    scales: {
+      y: {
+        reverse: true, // ✅ IMPORTANTISSIMO per golf (hcp più basso = meglio)
+
+        ticks: {
+          color: "#333"
+        },
+
+        grid: {
+          color: "#ddd"
+        }
+      },
+
+      x: {
+        ticks: {
+          color: "#333"
+        },
+
+        grid: {
+          display: false
+        }
+      }
+    }
+  }
 })
-}
 
 // STORAGE
 function save(){
