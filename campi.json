@@ -1,6 +1,5 @@
 
 [
-
 {"nome":"Acquabona","regione":"Italia","tee":{"bianco":{"cr":68.4,"slope":132},"giallo":{"cr":70.8,"slope":122},"rosso":{"cr":68.4,"slope":132}}},
 {"nome":"Alpino","regione":"Italia","tee":{"bianco":{"cr":67.9,"slope":131},"giallo":{"cr":66.1,"slope":131},"rosso":{"cr":68.3,"slope":118}}},
 {"nome":"Alta Badia","regione":"Italia","tee":{"bianco":{"cr":69.5,"slope":129},"giallo":{"cr":70.4,"slope":133},"rosso":{"cr":70.4,"slope":133}}},
@@ -79,7 +78,6 @@
 {"nome":"Moncalieri","regione":"Italia","tee":{"bianco":{"cr":63.7,"slope":102},"giallo":{"cr":62.7,"slope":100},"rosso":{"cr":63.6,"slope":100}}},
 {"nome":"Montecatini","regione":"Italia","tee":{"bianco":{"cr":72.1,"slope":137},"giallo":{"cr":71.2,"slope":135},"rosso":{"cr":72.2,"slope":128}}},
 {"nome":"Monteveglio","regione":"Italia","tee":{"bianco":{"cr":63.4,"slope":114},"giallo":{"cr":60.6,"slope":108},"rosso":{"cr":63.6,"slope":108}}}
-
 {"nome":"Mulino Cerrione","regione":"Italia","tee":{"bianco":{"cr":69.3,"slope":132},"giallo":{"cr":68.6,"slope":121},"rosso":{"cr":71.4,"slope":123}}},
 {"nome":"Oasi di Magliano","regione":"Italia","tee":{"bianco":{"cr":72.5,"slope":130},"giallo":{"cr":71.0,"slope":128},"rosso":{"cr":71.9,"slope":120}}},
 {"nome":"Palermo","regione":"Italia","tee":{"bianco":{"cr":62.4,"slope":112},"giallo":{"cr":59.1,"slope":104},"rosso":{"cr":62.0,"slope":102}}},
@@ -105,7 +103,6 @@
 {"nome":"Rossera","regione":"Italia","tee":{"bianco":{"cr":68.4,"slope":125},"giallo":{"cr":66.4,"slope":121},"rosso":{"cr":70.8,"slope":126}}},
 {"nome":"Rovedine","regione":"Italia","tee":{"bianco":{"cr":73.0,"slope":125},"giallo":{"cr":72.3,"slope":124},"rosso":{"cr":73.5,"slope":124}}},
 {"nome":"Rovigolf","regione":"Italia","tee":{"bianco":{"cr":57.6,"slope":94},"giallo":{"cr":57.6,"slope":94},"rosso":{"cr":59.6,"slope":97}}}
-
 {"nome":"Salice Terme","regione":"Italia","tee":{"bianco":{"cr":68.2,"slope":121},"giallo":{"cr":64.9,"slope":113},"rosso":{"cr":65.8,"slope":116}}},
 {"nome":"Salsomaggiore Terme","regione":"Italia","tee":{"bianco":{"cr":71.4,"slope":133},"giallo":{"cr":70.9,"slope":132},"rosso":{"cr":72.7,"slope":124}}},
 {"nome":"Saluzzo","regione":"Italia","tee":{"bianco":{"cr":72.8,"slope":132},"giallo":{"cr":72.2,"slope":132},"rosso":{"cr":73.6,"slope":126}}},
