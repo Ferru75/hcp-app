@@ -142,10 +142,10 @@
 {"nome":"Golf Bluegreen Bordeaux","country":"FR","tee":{"bianco":{"cr":72.8,"slope":135},"giallo":{"cr":71.8,"slope":132},"rosso":{"cr":72.5,"slope":129}}},
 {"nome":"Golf Bluegreen Dunkerque","country":"FR","tee":{"bianco":{"cr":71.2,"slope":129},"giallo":{"cr":70.2,"slope":126},"rosso":{"cr":70.9,"slope":123}}},
 {"nome":"Golf Bluegreen Lyon","country":"FR","tee":{"bianco":{"cr":72.0,"slope":132},"giallo":{"cr":71.0,"slope":129},"rosso":{"cr":71.6,"slope":126}}},
-{"nome":"Golf d'Aix-Marseille","country":"FR","tee":{"bianco":{"cr":73.5,"slope":140},"giallo":{"cr":72.6,"slope":136},"rosso":{"cr":73.3,"slope":133}}},
-{"nome":"Golf d'Hardelot - Les Dunes","country":"FR","tee":{"bianco":{"cr":73.0,"slope":138},"giallo":{"cr":71.8,"slope":134},"rosso":{"cr":72.5,"slope":131}}},
-{"nome":"Golf d'Hardelot - Les Pins","country":"FR","tee":{"bianco":{"cr":71.5,"slope":129},"giallo":{"cr":69.7,"slope":121},"rosso":{"cr":71.2,"slope":117}}},
-{"nome":"Golf d'Etretat","country":"FR","tee":{"bianco":{"cr":72.2,"slope":135},"giallo":{"cr":71.0,"slope":132},"rosso":{"cr":71.8,"slope":129}}},
+{"nome":"Golf Aix-Marseille","country":"FR","tee":{"bianco":{"cr":73.5,"slope":140},"giallo":{"cr":72.6,"slope":136},"rosso":{"cr":73.3,"slope":133}}},
+{"nome":"Golf Hardelot Les Dunes","country":"FR","tee":{"bianco":{"cr":73.0,"slope":138},"giallo":{"cr":71.8,"slope":134},"rosso":{"cr":72.5,"slope":131}}},
+{"nome":"Golf Hardelot Les Pins","country":"FR","tee":{"bianco":{"cr":71.5,"slope":129},"giallo":{"cr":69.7,"slope":121},"rosso":{"cr":71.2,"slope":117}}},
+{"nome":"Golf Etretat","country":"FR","tee":{"bianco":{"cr":72.2,"slope":135},"giallo":{"cr":71.0,"slope":132},"rosso":{"cr":71.8,"slope":129}}},
 {"nome":"Golf de Avignon","country":"FR","tee":{"bianco":{"cr":71.8,"slope":133},"giallo":{"cr":70.9,"slope":130},"rosso":{"cr":71.5,"slope":127}}},
 {"nome":"Golf de Barbaroux","country":"FR","tee":{"bianco":{"cr":74.0,"slope":143},"giallo":{"cr":72.8,"slope":139},"rosso":{"cr":73.6,"slope":136}}},
 {"nome":"Golf de Bayonne","country":"FR","tee":{"bianco":{"cr":71.6,"slope":132},"giallo":{"cr":70.7,"slope":129},"rosso":{"cr":71.3,"slope":126}}},
@@ -154,7 +154,7 @@
 {"nome":"Golf de Bordeaux Lac","country":"FR","tee":{"bianco":{"cr":73.6,"slope":136},"giallo":{"cr":72.4,"slope":133},"rosso":{"cr":73.2,"slope":130}}},
 {"nome":"Golf de Caen","country":"FR","tee":{"bianco":{"cr":71.3,"slope":132},"giallo":{"cr":70.4,"slope":129},"rosso":{"cr":71.0,"slope":126}}},
 {"nome":"Golf de Cannes","country":"FR","tee":{"bianco":{"cr":72.9,"slope":137},"giallo":{"cr":71.9,"slope":134},"rosso":{"cr":72.6,"slope":131}}},
-{"nome":"Golf de Cannes-Mougins","country":"FR","tee":{"bianco":{"cr":73.5,"slope":140},"giallo":{"cr":72.6,"slope":136},"rosso":{"cr":73.3,"slope":133}}},
+{"nome":"Golf de Cannes Mougins","country":"FR","tee":{"bianco":{"cr":73.5,"slope":140},"giallo":{"cr":72.6,"slope":136},"rosso":{"cr":73.3,"slope":133}}},
 {"nome":"Golf de Chamonix","country":"FR","tee":{"bianco":{"cr":70.9,"slope":130},"giallo":{"cr":69.8,"slope":127},"rosso":{"cr":70.5,"slope":124}}},
 {"nome":"Golf de Chantaco","country":"FR","tee":{"bianco":{"cr":71.2,"slope":132},"giallo":{"cr":70.4,"slope":129},"rosso":{"cr":71.0,"slope":126}}},
 {"nome":"Golf de Chantilly (Vineuil)","country":"FR","tee":{"bianco":{"cr":73.2,"slope":140},"giallo":{"cr":72.0,"slope":136},"rosso":{"cr":73.0,"slope":133}}},
@@ -193,9 +193,9 @@
 {"nome":"Golf de Toulouse","country":"FR","tee":{"bianco":{"cr":72.5,"slope":133},"giallo":{"cr":71.3,"slope":130},"rosso":{"cr":72.0,"slope":127}}},
 {"nome":"Golf de Valescure","country":"FR","tee":{"bianco":{"cr":71.6,"slope":130},"giallo":{"cr":70.6,"slope":128},"rosso":{"cr":71.3,"slope":125}}},
 {"nome":"Golf de Wimereux","country":"FR","tee":{"bianco":{"cr":72.4,"slope":135},"giallo":{"cr":71.5,"slope":133},"rosso":{"cr":72.0,"slope":130}}},
-{"nome":"Golf du Touquet - La Mer","country":"FR","tee":{"bianco":{"cr":74.0,"slope":143},"giallo":{"cr":73.0,"slope":139},"rosso":{"cr":73.6,"slope":136}}},
+{"nome":"Golf du Touquet La Mer","country":"FR","tee":{"bianco":{"cr":74.0,"slope":143},"giallo":{"cr":73.0,"slope":139},"rosso":{"cr":73.6,"slope":136}}},
 {"nome":"Le Golf National - Albatros","country":"FR","tee":{"bianco":{"cr":73.0,"slope":145},"giallo":{"cr":71.6,"slope":137},"rosso":{"cr":72.8,"slope":132}}},
-{"nome":"Terre Blanche - Le Château","country":"FR","tee":{"bianco":{"cr":74.5,"slope":144},"giallo":{"cr":73.5,"slope":140},"rosso":{"cr":74.0,"slope":138}}}
+{"nome":"Terre Blanche Le Chateau","country":"FR","tee":{"bianco":{"cr":74.5,"slope":144},"giallo":{"cr":73.5,"slope":140},"rosso":{"cr":74.0,"slope":138}}}
 ]
 ``
 
