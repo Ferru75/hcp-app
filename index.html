@@ -206,6 +206,7 @@ Seleziona il punteggio stableford e poi clicca su Simula gara!
 
 <script>
 
+
 let userCorrente=null
 let campi=[]
 let lastState=null
@@ -214,13 +215,11 @@ let data=new Array(20).fill(null)
 
 let stbValue=36
 
-// ✅ QUI dichiari SOLO le variabili (senza = document...)
 let grid, country, campo, tee, infoCampo, hcp, sim, grafico, loginBox, app, splash, user, pass;
-
-// ✅ QUI aspetti che il DOM sia pronto
 
 window.addEventListener("DOMContentLoaded", () => {
 
+  // ✅ DOM
   grid = document.getElementById("grid")
   country = document.getElementById("country")
   campo = document.getElementById("campo")
@@ -237,25 +236,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
   console.log("DOM OK ✅")
 
-  // ✅ METTI QUI QUESTA RIGA
-  initAutostart()
+  // ✅ SPLASH
+  setTimeout(()=>{
+    splash.style.display="none"
+  },1000)
+
+  // ✅ AUTOLOGIN (corretto)
+  let saved = localStorage.getItem("lastUser")
+
+  if(saved){
+    userCorrente = saved
+    start()
+  }
 
 })
 
-
-// SPLASH
-setTimeout(()=>{
-splash.style.display="none"
-},1000)
-
-// AUTOLOGIN
-window.addEventListener("DOMContentLoaded",()=>{
-let saved=localStorage.getItem("lastUser")
-if(saved){
-userCorrente=saved
-start()
-}
-})
 
 // LOGIN
 function register(){
