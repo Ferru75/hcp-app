@@ -167,7 +167,7 @@
 {"nome":"Golf de Granville","country":"FR","tee":{"bianco":{"cr":73.4,"slope":141},"giallo":{"cr":72.2,"slope":136},"rosso":{"cr":73.0,"slope":133}}},
 {"nome":"Golf de Hossegor","country":"FR","tee":{"bianco":{"cr":73.5,"slope":140},"giallo":{"cr":72.3,"slope":136},"rosso":{"cr":73.1,"slope":133}}},
 {"nome":"Golf de La Nivelle","country":"FR","tee":{"bianco":{"cr":70.7,"slope":130},"giallo":{"cr":69.9,"slope":127},"rosso":{"cr":70.5,"slope":124}}},
-{"nome":"Golf de Lille MEtropole","country":"FR","tee":{"bianco":{"cr":71.8,"slope":131},"giallo":{"cr":70.8,"slope":128},"rosso":{"cr":71.5,"slope":125}}},
+{"nome":"Golf de Lille Metropole","country":"FR","tee":{"bianco":{"cr":71.8,"slope":131},"giallo":{"cr":70.8,"slope":128},"rosso":{"cr":71.5,"slope":125}}},
 {"nome":"Golf de Limoges","country":"FR","tee":{"bianco":{"cr":71.2,"slope":130},"giallo":{"cr":70.3,"slope":127},"rosso":{"cr":70.9,"slope":124}}},
 {"nome":"Golf de Lourdes","country":"FR","tee":{"bianco":{"cr":70.9,"slope":130},"giallo":{"cr":70.0,"slope":127},"rosso":{"cr":70.6,"slope":124}}},
 {"nome":"Golf de Lyon","country":"FR","tee":{"bianco":{"cr":72.7,"slope":135},"giallo":{"cr":71.5,"slope":132},"rosso":{"cr":72.3,"slope":129}}},
