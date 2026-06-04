@@ -380,8 +380,5 @@
 {"nome":"Vista Alegre Golf","country":"ES","tee":{"bianco":{"cr":71.8,"slope":133},"giallo":{"cr":70.4,"slope":129},"rosso":{"cr":71.1,"slope":126}}},
 {"nome":"Zagaleta New Course","country":"ES","tee":{"bianco":{"cr":73.7,"slope":140},"giallo":{"cr":72.2,"slope":136},"rosso":{"cr":73.0,"slope":132}}},
 {"nome":"Zagaleta Old Course","country":"ES","tee":{"bianco":{"cr":74.1,"slope":142},"giallo":{"cr":72.6,"slope":138},"rosso":{"cr":73.4,"slope":134}}}
-
-...
-  
 ]
 
