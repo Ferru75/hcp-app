@@ -137,7 +137,7 @@
 {"nome":"Vicenza","country": "IT","tee":{"bianco":{"cr":72.6,"slope":138},"giallo":{"cr":71.0,"slope":135},"rosso":{"cr":72.6,"slope":127}}},
 {"nome":"Vigevano","country": "IT","tee":{"bianco":{"cr":71.0,"slope":127},"giallo":{"cr":70.7,"slope":125},"rosso":{"cr":72.7,"slope":124}}},
 {"nome":"Villa d'Este","country": "IT","tee":{"bianco":{"cr":71.0,"slope":130},"giallo":{"cr":70.0,"slope":129},"rosso":{"cr":71.3,"slope":123}}},
-{"nome":"Zoate","country": "IT","tee":{"bianco":{"cr":71.5,"slope":146},"giallo":{"cr":70.5,"slope":144},"rosso":{"cr":72.2,"slope":137}}}
+{"nome":"Zoate","country": "IT","tee":{"bianco":{"cr":71.5,"slope":146},"giallo":{"cr":70.5,"slope":144},"rosso":{"cr":72.2,"slope":137}}},
 {"nome":"Evian Resort Golf Club","country":"FR","tee":{"bianco":{"cr":74.2,"slope":142},"giallo":{"cr":72.8,"slope":138},"rosso":{"cr":73.5,"slope":136}}},
 {"nome":"Golf Bluegreen Bordeaux","country":"FR","tee":{"bianco":{"cr":72.8,"slope":135},"giallo":{"cr":71.8,"slope":132},"rosso":{"cr":72.5,"slope":129}}},
 {"nome":"Golf Bluegreen Dunkerque","country":"FR","tee":{"bianco":{"cr":71.2,"slope":129},"giallo":{"cr":70.2,"slope":126},"rosso":{"cr":70.9,"slope":123}}},
