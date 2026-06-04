@@ -317,7 +317,7 @@ async function loadCampi(){
   // 🔹 Popola paesi unici
   const countries = [...new Set(campi.map(c => c.country))]
 
-  country.innerHTML = '<option value="">Paese</option>'
+  country.innerHTML = '<option value="">Country</option>'
 
   countries.forEach(c => {
     let o = document.createElement("option")
@@ -327,7 +327,7 @@ async function loadCampi(){
   })
 
   // reset campo
-  campo.innerHTML = '<option value="">Campo</option>'
+  campo.innerHTML = '<option value="">Course</option>'
   campo.disabled = true
 }
 
