@@ -150,18 +150,18 @@ I risultati evidenziati in verde sono i tuoi TOP 8 la cui media non è altro che
 <div class="selectorRow">
 
 <select id="country">
-<option value="">Country</option>
+<option value="">Paese</option>
 </select>
 
 <select id="campo" disabled>
-<option value="">Course</option>
+<option value="">Campo</option>
 </select>
 
 
 <select id="tee">
-<option value="giallo">Yellow</option>
-<option value="bianco">White</option>
-<option value="rosso">Red</option>
+<option value="giallo">Giallo</option>
+<option value="bianco">Bianco</option>
+<option value="rosso">Rosso</option>
 </select>
 </div>
 
@@ -206,7 +206,6 @@ Seleziona il punteggio stableford e poi clicca su Simula gara!
 
 <script>
 
-
 let userCorrente=null
 let campi=[]
 let lastState=null
@@ -215,42 +214,19 @@ let data=new Array(20).fill(null)
 
 let stbValue=36
 
-let grid, country, campo, tee, infoCampo, hcp, sim, grafico, loginBox, app, splash, user, pass;
+// SPLASH
+setTimeout(()=>{
+splash.style.display="none"
+},1000)
 
-window.addEventListener("DOMContentLoaded", () => {
-
-  // ✅ DOM
-  grid = document.getElementById("grid")
-  country = document.getElementById("country")
-  campo = document.getElementById("campo")
-  tee = document.getElementById("tee")
-  infoCampo = document.getElementById("infoCampo")
-  hcp = document.getElementById("hcp")
-  sim = document.getElementById("sim")
-  grafico = document.getElementById("grafico")
-  loginBox = document.getElementById("loginBox")
-  app = document.getElementById("app")
-  splash = document.getElementById("splash")
-  user = document.getElementById("user")
-  pass = document.getElementById("pass")
-
-  console.log("DOM OK ✅")
-
-  // ✅ SPLASH
-  setTimeout(()=>{
-    splash.style.display="none"
-  },1000)
-
-  // ✅ AUTOLOGIN (corretto)
-  let saved = localStorage.getItem("lastUser")
-
-  if(saved){
-    userCorrente = saved
-    start()
-  }
-
+// AUTOLOGIN
+window.addEventListener("DOMContentLoaded",()=>{
+let saved=localStorage.getItem("lastUser")
+if(saved){
+userCorrente=saved
+start()
+}
 })
-
 
 // LOGIN
 function register(){
@@ -341,7 +317,7 @@ async function loadCampi(){
   // 🔹 Popola paesi unici
   const countries = [...new Set(campi.map(c => c.country))]
 
-  country.innerHTML = '<option value="">Country</option>'
+  country.innerHTML = '<option value="">Paese</option>'
 
   countries.forEach(c => {
     let o = document.createElement("option")
@@ -351,7 +327,7 @@ async function loadCampi(){
   })
 
   // reset campo
-  campo.innerHTML = '<option value="">Course</option>'
+  campo.innerHTML = '<option value="">Campo</option>'
   campo.disabled = true
 }
 
