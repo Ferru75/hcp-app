@@ -212,7 +212,7 @@
 {"nome":"Brigels","country":"CH","tee":{"bianco":{"cr":70.4,"slope":130},"giallo":{"cr":69.0,"slope":126},"rosso":{"cr":69.8,"slope":123}}},
 {"nome":"Bubikon","country":"CH","tee":{"bianco":{"cr":72.2,"slope":135},"giallo":{"cr":70.8,"slope":131},"rosso":{"cr":71.6,"slope":128}}},
 {"nome":"Cham","country":"CH","tee":{"bianco":{"cr":71.5,"slope":132},"giallo":{"cr":70.0,"slope":128},"rosso":{"cr":70.9,"slope":125}}},
-{"nome":"Crans-sur-Sierre","country":"CH","tee":{"bianco":{"cr":72.7,"slope":137},"giallo":{"cr":71.3,"slope":134},"rosso":{"cr":72.5,"slope":131}}},
+{"nome":"Crans sur Sierre","country":"CH","tee":{"bianco":{"cr":72.7,"slope":137},"giallo":{"cr":71.3,"slope":134},"rosso":{"cr":72.5,"slope":131}}},
 {"nome":"Davos","country":"CH","tee":{"bianco":{"cr":68.9,"slope":128},"giallo":{"cr":67.5,"slope":124},"rosso":{"cr":68.3,"slope":121}}},
 {"nome":"Disentis","country":"CH","tee":{"bianco":{"cr":70.2,"slope":130},"giallo":{"cr":68.8,"slope":126},"rosso":{"cr":69.6,"slope":123}}},
 {"nome":"Domaine Imperial","country":"CH","tee":{"bianco":{"cr":74.3,"slope":141},"giallo":{"cr":72.8,"slope":137},"rosso":{"cr":73.6,"slope":134}}},
@@ -276,7 +276,7 @@
 {"nome":"Golf Club Zurich","country":"CH","tee":{"bianco":{"cr":73.2,"slope":138},"giallo":{"cr":71.7,"slope":134},"rosso":{"cr":72.6,"slope":130}}},
 {"nome":"Golf Küsnacht","country":"CH","tee":{"bianco":{"cr":72.3,"slope":135},"giallo":{"cr":70.8,"slope":131},"rosso":{"cr":71.7,"slope":128}}},
 {"nome":"Golf Sempach Lakeside","country":"CH","tee":{"bianco":{"cr":69.1,"slope":136},"giallo":{"cr":67.6,"slope":129},"rosso":{"cr":71.1,"slope":129}}}
-
+...
   
 ]
 
