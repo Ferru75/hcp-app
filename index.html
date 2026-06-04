@@ -311,7 +311,7 @@ update()
 // CAMPI
 
 async function loadCampi(){
-  let res = await fetch("campi.json")
+  let res = await fetch("campi.json?v=2")
   campi = await res.json()
 
   // 🔹 Popola paesi unici
