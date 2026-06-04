@@ -146,8 +146,17 @@ I risultati evidenziati in verde sono i tuoi TOP 8 la cui media non è altro che
 
 <div class="container">
 
+
 <div class="selectorRow">
-<select id="campo"></select>
+
+<select id="country">
+<option value="">Paese</option>
+</select>
+
+<select id="campo" disabled>
+<option value="">Campo</option>
+</select>
+
 
 <select id="tee">
 <option value="giallo">Giallo</option>
@@ -300,19 +309,54 @@ update()
 }
 
 // CAMPI
+
 async function loadCampi(){
-let res=await fetch("campi.json")
-campi=await res.json()
+  let res = await fetch("campi.json")
+  campi = await res.json()
 
-campo.innerHTML='<option>Campo</option>'
+  // 🔹 Popola paesi unici
+  const countries = [...new Set(campi.map(c => c.country))]
 
-campi.forEach(c=>{
-let o=document.createElement("option")
-o.value=c.nome
-o.textContent=c.nome
-campo.appendChild(o)
-})
+  country.innerHTML = '<option value="">Paese</option>'
+
+  countries.forEach(c => {
+    let o = document.createElement("option")
+    o.value = c
+    o.textContent = c
+    country.appendChild(o)
+  })
+
+  // reset campo
+  campo.innerHTML = '<option value="">Campo</option>'
+  campo.disabled = true
 }
+
+country.onchange = function(){
+
+  const selected = this.value
+
+  campo.innerHTML = '<option value="">Campo</option>'
+
+  if(!selected){
+    campo.disabled = true
+    return
+  }
+
+  // filtra campi per paese
+  const filtrati = campi
+    .filter(c => c.country === selected)
+    .sort((a,b) => a.nome.localeCompare(b.nome))
+
+  filtrati.forEach(c => {
+    let o = document.createElement("option")
+    o.value = c.nome
+    o.textContent = c.nome
+    campo.appendChild(o)
+  })
+
+  campo.disabled = false
+}
+
 
 // INFO CAMPO
 campo.onchange=updateInfo
