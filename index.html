@@ -197,7 +197,7 @@ z-index:9999;
   padding:10px;
   border-radius:10px;
   border:1px solid #c8e6c9;
-  margin:4px 0 6px 0;   /* 🔥 riduce spazio sopra e sotto */
+  margin:2px 0 4px 0;   /* 🔥 praticamente attaccato */
   font-weight:600;
 }
 
@@ -215,20 +215,27 @@ z-index:9999;
 
 
 .logoBox{
-  display:flex;
+display:flex;
   justify-content:center;
   align-items:center;
   width:100%;
-  margin:2px 0;   /* 🔥 praticamente attaccato */
+  margin:0;   /* 🔥 zero spazio */
 }
 
 
 
 .logoBox img{
-  width:85%;        /* 🔥 riempie quasi tutta la larghezza */
-  max-width:320px;  /* limite per non esagerare */
+ 
+width:90%;           /* 🔥 più largo */
+  max-width:340px;     /* 🔥 leggermente più grande */
   height:auto;
   display:block;
+  margin:0 auto;       /* ✅ centra bene */
+
+}
+
+.headerBox{
+  padding:8px 14px 10px 14px;  /* 🔥 meno spazio sopra e sotto */
 }
 
 
@@ -256,7 +263,7 @@ z-index:9999;
 <div id="app">
 
 
-<div class="container" style="position:relative">
+<div class="container headerBox" style="position:relative">
 
 <div class="logoBox">
  <img src="logo-horizontal.png">
