@@ -165,6 +165,22 @@ I risultati evidenziati in verde sono i tuoi TOP 8 la cui media non è altro che
 </select>
 </div>
 
+
+<h3>➕ Aggiungi campo</h3>
+
+<input type="text" id="nomeCampo" placeholder="Nome campo"><br><br>
+
+<input type="number" id="crBianco" placeholder="CR bianco">
+<input type="number" id="slopeBianco" placeholder="Slope bianco"><br><br>
+
+<input type="number" id="crGiallo" placeholder="CR giallo">
+<input type="number" id="slopeGiallo" placeholder="Slope giallo"><br><br>
+
+<input type="number" id="crRosso" placeholder="CR rosso">
+<input type="number" id="slopeRosso" placeholder="Slope rosso"><br><br>
+
+<button onclick="aggiungiCampo()">Salva campo</button>
+
 <div class="inputRow">
 <input id="crManuale" type="number" step="0.1" placeholder="CR override">
 <input id="slopeManuale" type="number" placeholder="Slope override">
@@ -313,6 +329,9 @@ update()
 async function loadCampi(){
   let res = await fetch("campi.json?v=7")
   campi = await res.json()
+
+let custom = JSON.parse(localStorage.getItem("campiCustom")) || []
+  campi = [...campi, ...custom]
 
   // 🔹 Popola paesi unici
   const countries = [...new Set(campi.map(c => c.country))]
