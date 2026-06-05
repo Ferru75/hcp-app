@@ -194,12 +194,14 @@ z-index:9999;
   font-size:13px;
   color:#2e7d32;
   background:#f1f8e9;
-  padding:8px;
+  padding:6px;
   border-radius:10px;
   border:1px solid #c8e6c9;
-  margin:2px 0 4px 0;   /* 🔥 praticamente attaccato */
+  margin:0;           /* ✅ elimina spazio normale */
+  margin-top:-4px;    /* 🔥 QUESTA È LA RIGA IMPORTANTE */
   font-weight:600;
 }
+
 
 
 .softHint{
@@ -225,17 +227,19 @@ display:flex;
 
 
 .logoBox img{
+ 
  width:95%;
   max-width:360px;
   height:auto;
   display:block;
-  margin:0 auto;
+  margin:0 auto -6px auto;   /* 🔥 trucco chiave */
 }
 
 
 
+
 .headerBox{
- padding:6px 12px 6px 12px;   /* 🔥 molto più compatto */
+ padding:4px 12px 4px 12px;  /* 🔥 ancora più compatto */
 }
 
 
