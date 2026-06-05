@@ -146,6 +146,10 @@ I risultati evidenziati in verde sono i tuoi TOP 8 la cui media non è altro che
 
 <div class="container">
 
+<p style="text-align:center; font-size:14px; color:#444;">
+Select from menu Country, Course and Tee
+</p>
+
 
 <div class="selectorRow">
 
@@ -166,30 +170,35 @@ I risultati evidenziati in verde sono i tuoi TOP 8 la cui media non è altro che
 </div>
 
 
-<h3>➕ Aggiungi campo</h3>
 
-<input type="text" id="nomeCampo" placeholder="Nome campo"><br><br>
+<p style="text-align:center; font-size:14px; color:#444;">
+Select from menu Country, Course and Tee
+</p>
 
-<input type="number" id="crBianco" placeholder="CR bianco">
-<input type="number" id="slopeBianco" placeholder="Slope bianco"><br><br>
+<button onclick="toggleForm()">➕ Add Course</button>
 
-<input type="number" id="crGiallo" placeholder="CR giallo">
-<input type="number" id="slopeGiallo" placeholder="Slope giallo"><br><br>
+<div id="formCampo" style="display:none; margin-top:10px;">
 
-<input type="number" id="crRosso" placeholder="CR rosso">
-<input type="number" id="slopeRosso" placeholder="Slope rosso"><br><br>
+<input type="text" id="nomeCampo" placeholder="Course name"><br><br>
 
-<button onclick="aggiungiCampo()">Salva campo</button>
+<div style="display:flex; gap:6px;">
+  <input type="number" id="crBianco" placeholder="CR White" style="flex:1;">
+  <input type="number" id="slopeBianco" placeholder="Slope White" style="flex:1;">
+</div><br>
 
-<div class="inputRow">
-<input id="crManuale" type="number" step="0.1" placeholder="CR override">
-<input id="slopeManuale" type="number" placeholder="Slope override">
+<div style="display:flex; gap:6px;">
+  <input type="number" id="crGiallo" placeholder="CR Yellow" style="flex:1;">
+  <input type="number" id="slopeGiallo" placeholder="Slope Yellow" style="flex:1;">
+</div><br>
+
+<div style="display:flex; gap:6px;">
+  <input type="number" id="crRosso" placeholder="CR Red" style="flex:1;">
+  <input type="number" id="slopeRosso" placeholder="Slope Red" style="flex:1;">
+</div><br>
+
+<button onclick="aggiungiCampo()">Save Course</button>
+
 </div>
-
-<div id="infoCampo"></div>
-
-</div>
-
 
 <!-- ✅ STB -->
   
@@ -230,6 +239,13 @@ let data=new Array(20).fill(null)
 
 let stbValue=36
 
+
+function toggleForm(){
+  let f = document.getElementById("formCampo");
+  f.style.display = f.style.display === "none" ? "block" : "none";
+}
+
+  
 // SPLASH
 setTimeout(()=>{
 splash.style.display="none"
@@ -330,7 +346,13 @@ async function loadCampi(){
   let res = await fetch("campi.json?v=7")
   campi = await res.json()
 
-let custom = JSON.parse(localStorage.getItem("campiCustom")) || []
+async function loadCampi(){
+
+  let res = await fetch("campi.json?v=7")
+  campi = await res.json()
+
+  // ✅ AGGIUNGI QUI
+  let custom = JSON.parse(localStorage.getItem("campiCustom")) || []
   campi = [...campi, ...custom]
 
   // 🔹 Popola paesi unici
@@ -345,10 +367,11 @@ let custom = JSON.parse(localStorage.getItem("campiCustom")) || []
     country.appendChild(o)
   })
 
-  // reset campo
+  // ✅ reset campo
   campo.innerHTML = '<option value="">Campo</option>'
   campo.disabled = true
 }
+
 
 country.onchange = function(){
 
