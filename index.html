@@ -169,12 +169,6 @@ Select from menu Country, Course and Tee
 </select>
 </div>
 
-
-
-<p style="text-align:center; font-size:14px; color:#444;">
-Select from menu Country, Course and Tee
-</p>
-
 <button onclick="toggleForm()">➕ Add Course</button>
 
 <div id="formCampo" style="display:none; margin-top:10px;">
@@ -342,11 +336,8 @@ update()
 
 // CAMPI
 
-async function loadCampi(){
-  let res = await fetch("campi.json?v=7")
-  campi = await res.json()
 
-async function loadCampi(){
+sync function loadCampi(){
 
   let res = await fetch("campi.json?v=7")
   campi = await res.json()
@@ -644,6 +635,47 @@ localStorage.setItem(userCorrente,JSON.stringify(data))
 function load(){
 let s=localStorage.getItem(userCorrente)
 if(s)data=JSON.parse(s)
+}
+
+function aggiungiCampo() {
+
+  const nome = document.getElementById("nomeCampo").value;
+
+  if(!nome){
+    alert("Inserisci nome campo");
+    return;
+  }
+
+  const campo = {
+    nome: nome,
+    country: "CUSTOM",
+    tee: {
+      bianco: {
+        cr: parseFloat(document.getElementById("crBianco").value),
+        slope: parseInt(document.getElementById("slopeBianco").value)
+      },
+      giallo: {
+        cr: parseFloat(document.getElementById("crGiallo").value),
+        slope: parseInt(document.getElementById("slopeGiallo").value)
+      },
+      rosso: {
+        cr: parseFloat(document.getElementById("crRosso").value),
+        slope: parseInt(document.getElementById("slopeRosso").value)
+      }
+    }
+  };
+
+  let campiCustom = JSON.parse(localStorage.getItem("campiCustom")) || [];
+
+  campiCustom.push(campo);
+
+  localStorage.setItem("campiCustom", JSON.stringify(campiCustom));
+
+  alert("Campo salvato ✅");
+
+  // aggiorna senza reload
+  loadCampi();
+  toggleForm();
 }
 
 </script>
