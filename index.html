@@ -21,13 +21,61 @@ border-radius:14px;
 padding:14px;
 }
 
-select{
+
+.addCourseBtn{
+background:#e8f5e9;
+color:#2e7d32;
+border:2px dashed #2e7d32;
+font-size:16px;
+font-weight:bold;
+padding:12px;
+border-radius:10px;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:8px;
+}
+
+.plusIcon{
+color:#ff9800;
+font-size:20px;
+}
+
+.helperText{
+text-align:center;
+font-size:13px;
+color:#555;
+margin-top:10px;
+margin-bottom:5px;
+}
+
+.inputFull{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+margin-bottom:10px;
+}
+
+.row{
+display:flex;
+gap:6px;
+margin-bottom:10px;
+}
+
+.row input{
+flex:1;
 padding:10px;
 border-radius:8px;
 border:1px solid #ccc;
-font-size:14px;
-width:100%;
 }
+
+label{
+font-size:13px;
+font-weight:bold;
+color:#555;
+}
+
 
 /* 🔴 LOGIN FIX */
 #app{display:none}
@@ -181,15 +229,6 @@ Select from menu Country, Course and Tee
 <button class="addCourseBtn" onclick="toggleForm()">
 ➕ Add Course
 </button>
-
-.addCourseBtn{
-background:none;
-color:#2e7d32;
-font-size:18px;
-font-weight:bold;
-border:none;
-margin-top:10px;
-}
 
 <div id="formCampo" style="display:none; margin-top:10px;">
 
