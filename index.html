@@ -337,7 +337,7 @@ update()
 // CAMPI
 
 
-sync function loadCampi(){
+async function loadCampi(){
 
   let res = await fetch("campi.json?v=7")
   campi = await res.json()
