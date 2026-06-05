@@ -16,9 +16,17 @@ body{font-family:Arial;background:#e8f5e9;margin:0}
 
 .container{
 background:white;
-margin:10px;
+margin:12px;
 border-radius:14px;
-padding:12px;
+padding:14px;
+}
+
+select{
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:14px;
+width:100%;
 }
 
 /* 🔴 LOGIN FIX */
@@ -169,30 +177,73 @@ Select from menu Country, Course and Tee
 </select>
 </div>
 
-<button onclick="toggleForm()">➕ Add Course</button>
+
+<button class="addCourseBtn" onclick="toggleForm()">
+➕ Add Course
+</button>
+
+.addCourseBtn{
+background:none;
+color:#2e7d32;
+font-size:18px;
+font-weight:bold;
+border:none;
+margin-top:10px;
+}
 
 <div id="formCampo" style="display:none; margin-top:10px;">
 
-<input type="text" id="nomeCampo" placeholder="Course name"><br><br>
+<input type="text" id="nomeCampo" placeholder="Course name" class="inputFull"><br>
 
-<div style="display:flex; gap:6px;">
-  <input type="number" id="crBianco" placeholder="CR White" style="flex:1;">
-  <input type="number" id="slopeBianco" placeholder="Slope White" style="flex:1;">
-</div><br>
+<label>White Tee</label>
+<div class="row">
+  <input type="number" id="crBianco" placeholder="CR">
+  <input type="number" id="slopeBianco" placeholder="Slope">
+</div>
 
-<div style="display:flex; gap:6px;">
-  <input type="number" id="crGiallo" placeholder="CR Yellow" style="flex:1;">
-  <input type="number" id="slopeGiallo" placeholder="Slope Yellow" style="flex:1;">
-</div><br>
+<label>Yellow Tee</label>
+<div class="row">
+  <input type="number" id="crGiallo" placeholder="CR">
+  <input type="number" id="slopeGiallo" placeholder="Slope">
+</div>
 
-<div style="display:flex; gap:6px;">
-  <input type="number" id="crRosso" placeholder="CR Red" style="flex:1;">
-  <input type="number" id="slopeRosso" placeholder="Slope Red" style="flex:1;">
-</div><br>
+<label>Red Tee</label>
+<div class="row">
+  <input type="number" id="crRosso" placeholder="CR">
+  <input type="number" id="slopeRosso" placeholder="Slope">
+</div>
 
 <button onclick="aggiungiCampo()">Save Course</button>
 
 </div>
+
+.inputFull{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+margin-bottom:10px;
+}
+
+.row{
+display:flex;
+gap:6px;
+margin-bottom:10px;
+}
+
+.row input{
+flex:1;
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+label{
+font-size:13px;
+font-weight:bold;
+color:#555;
+}
+
 
 <!-- ✅ STB -->
   
