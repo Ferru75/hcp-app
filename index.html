@@ -567,11 +567,7 @@ country.onchange = function(){
 
     let o = document.createElement("option")
     o.value = c.nome
-
-    if(selected === "CUSTOM"){
-      o.textContent = "🗑️ " + c.nome
-    } else {
-      o.textContent = c.nome
+    o.textContent = c.nome
     }
 
     campo.appendChild(o)
