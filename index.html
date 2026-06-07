@@ -596,6 +596,29 @@ let d=c.tee[tee.value]||c.tee.giallo
 infoCampo.innerHTML="CR "+d.cr+" | Slope "+d.slope
 }
 
+campo.addEventListener("change", function(){
+
+  if(country.value !== "CUSTOM") return
+
+  const nome = this.value
+
+  const conferma = confirm("Vuoi eliminare il campo:\n" + nome + " ?")
+
+  if(!conferma){
+    this.value = ""
+    return
+  }
+
+  let campiCustom = JSON.parse(localStorage.getItem("campiCustom")) || []
+  campiCustom = campiCustom.filter(c => c.nome !== nome)
+
+  localStorage.setItem("campiCustom", JSON.stringify(campiCustom))
+
+  loadCampi()
+
+  alert("Campo eliminato ✅")
+})
+
 // SD
 function changeSD(i,d){
 if(data[i]===null)data[i]=0
