@@ -430,7 +430,16 @@ let lastState=null
 let lastSimulatedList=null
 let data=new Array(20).fill(null)
 
+
 let stbValue=36
+
+let loginBox, appDiv, grid, country, campo, tee, hcp, grafico, sim
+
+function toggleForm(){
+  let f = document.getElementById("formCampo");
+  f.style.display = f.style.display === "none" ? "block" : "none";
+}
+
 
 function toggleForm(){
   let f = document.getElementById("formCampo");
