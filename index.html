@@ -448,15 +448,21 @@ setTimeout(()=>{
 
 
 // ✅ AUTOLOGIN
+
 window.addEventListener("DOMContentLoaded",()=>{
 
-  
-onAuthStateChanged(auth, (user) => {
-  if(user){
-    userCorrente = user.email   // ✅ AGGIUNGI QUESTO
-    start()
-  }
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+      userCorrente = user.email
+      start()
+    } else {
+      // ✅ MOSTRA LOGIN
+      document.getElementById("loginBox").style.display = "block"
+    }
+  })
+
 })
+
 
 
 })
