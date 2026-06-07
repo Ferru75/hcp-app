@@ -563,15 +563,16 @@ country.onchange = function(){
     .filter(c => c.country === selected)
     .sort((a,b) => a.nome.localeCompare(b.nome))
 
-  filtrati.forEach(c => {
+  
+filtrati.forEach(c => {
 
-    let o = document.createElement("option")
-    o.value = c.nome
-    o.textContent = c.nome
-    }
+  let o = document.createElement("option")
+  o.value = c.nome
+  o.textContent = c.nome
 
-    campo.appendChild(o)
-  })
+  campo.appendChild(o)
+})
+
 
   campo.disabled = false
 }
