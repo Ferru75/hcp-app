@@ -258,12 +258,11 @@ width:100%;
 <h2 style="text-align:center;">HCP PRO</h2>
 <p style="text-align:center;">Accedi o crea account</p>
 
-<input id="user" placeholder="Email">
+<input id="user" placeholder="Username">
 <input id="pass" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
 <button onclick="register()">Crea account</button>
-<button onclick="resetPassword()">Forgot password?</button>
 </div>
 
 <!-- APP -->
@@ -394,35 +393,7 @@ Select from menu Country, Course and Tee
 <canvas id="grafico"></canvas>
 </div>
 
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
-
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAyGmHhnfPD3hQxxDS6hqxpiLLch_UEzHM",
-  authDomain: "hcp-pro.firebaseapp.com",
-  projectId: "hcp-pro",
-  storageBucket: "hcp-pro.firebasestorage.app",
-  messagingSenderId: "307864040038",
-  appId: "1:307864040038:web:071200723a5945de57f3a7"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
+<script>
 
 let userCorrente=null
 let campi=[]
@@ -430,113 +401,56 @@ let lastState=null
 let lastSimulatedList=null
 let data=new Array(20).fill(null)
 
-
 let stbValue=36
 
-let loginBox, appDiv, grid, country, campo, tee, hcp, grafico, sim
 
 function toggleForm(){
   let f = document.getElementById("formCampo");
   f.style.display = f.style.display === "none" ? "block" : "none";
 }
 
- 
+  
 // SPLASH
-
 setTimeout(()=>{
-  document.getElementById("splash").style.display="none"
+splash.style.display="none"
 },1000)
 
-
-
-
+// AUTOLOGIN
 window.addEventListener("DOMContentLoaded",()=>{
-
-loginBox = document.getElementById("loginBox")
-  appDiv = document.getElementById("app")
-  grid = document.getElementById("grid")
-  country = document.getElementById("country")
-  campo = document.getElementById("campo")
-  tee = document.getElementById("tee")
-  hcp = document.getElementById("hcp")
-  grafico = document.getElementById("grafico")
-  sim = document.getElementById("sim")
-
-  
-onAuthStateChanged(auth, (user) => {
-
-  if(user){
-    userCorrente = user.email
-    loginBox.style.display = "none"
-    appDiv.style.display = "block"
-    start()
-  } else {
-    appDiv.style.display = "none"
-    loginBox.style.display = "block"
-  }
-
+let saved=localStorage.getItem("lastUser")
+if(saved){
+userCorrente=saved
+start()
+}
 })
 
-  
-})
-
-
-// ✅ LOGIN / REGISTER / RESET / LOGOUT
-
+// LOGIN
 function register(){
-  createUserWithEmailAndPassword(auth, user.value, pass.value)
-    .then(() => {
-      alert("Account creato ✅")
-      start()
-    })
-    .catch(err => alert(err.message))
+localStorage.setItem("u_"+user.value,btoa(pass.value))
+localStorage.setItem("lastUser",user.value)
+userCorrente=user.value
+start()
 }
 
 function login(){
-  signInWithEmailAndPassword(auth, user.value, pass.value)
-    .then(() => {
-      alert("Login OK ✅")
-      start()
-    })
-    .catch(err => alert(err.message))
+if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
+localStorage.setItem("lastUser",user.value)
+userCorrente=user.value
+start()
+}else alert("Credenziali errate")
 }
-
-function resetPassword(){
-  if(!user.value){
-    alert("Inserisci la tua email")
-    return
-  }
-
-  sendPasswordResetEmail(auth, user.value)
-    .then(() => alert("Email inviata ✅"))
-    .catch(err => alert(err.message))
-}
-
 
 function logout(){
-  signOut(auth)
+localStorage.removeItem("lastUser")
+location.reload()
 }
-
 
 // START
-
-
-let initialized = false;
-
-
-
-async function start(){
-  loginBox.style.display="none"
-  appDiv.style.display="block"
-
-  if(!grid.hasChildNodes()){
-    await init()
-  }
+function start(){
+loginBox.style.display="none"
+app.style.display="block"
+init()
 }
-
-
-
-
 
 // INIT BOTTONI
 async function init(){
@@ -1029,10 +943,6 @@ toggleForm();
 renderCustomList();
 }
 
-window.register = register
-window.login = login
-window.resetPassword = resetPassword
-window.logout = logout
  
   
 </script>
