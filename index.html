@@ -444,19 +444,20 @@ setTimeout(()=>{
 splash.style.display="none"
 },1000)
 
-// AUTOLOGIN
+
+/ ✅ AUTOLOGIN
 window.addEventListener("DOMContentLoaded",()=>{
 
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+      start()
+    }
+  })
 
-onAuthStateChanged(auth, (user) => {
-  if(user){
-    start()
-  }
 })
 
 
-// LOGIN
+// ✅ LOGIN / REGISTER / RESET / LOGOUT
 
 function register(){
   createUserWithEmailAndPassword(auth, user.value, pass.value)
@@ -466,8 +467,6 @@ function register(){
     })
     .catch(err => alert(err.message))
 }
-
-
 
 function login(){
   signInWithEmailAndPassword(auth, user.value, pass.value)
@@ -479,16 +478,22 @@ function login(){
 }
 
 function resetPassword(){
+  if(!user.value){
+    alert("Inserisci la tua email")
+    return
+  }
+
   sendPasswordResetEmail(auth, user.value)
     .then(() => alert("Email inviata ✅"))
     .catch(err => alert(err.message))
 }
 
-
 function logout(){
-localStorage.removeItem("lastUser")
-location.reload()
+  signOut(auth).then(() => {
+    location.reload()
+  })
 }
+
 
 // START
 function start(){
