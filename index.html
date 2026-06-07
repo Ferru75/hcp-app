@@ -432,6 +432,16 @@ let data=new Array(20).fill(null)
 
 let stbValue=36
 
+const loginBox = document.getElementById("loginBox")
+const appDiv = document.getElementById("app")
+const grid = document.getElementById("grid")
+const country = document.getElementById("country")
+const campo = document.getElementById("campo")
+const tee = document.getElementById("tee")
+const hcp = document.getElementById("hcp")
+const grafico = document.getElementById("grafico")
+const sim = document.getElementById("sim")
+
 
 function toggleForm(){
   let f = document.getElementById("formCampo");
@@ -502,11 +512,13 @@ function logout(){
 
 
 // START
+
 function start(){
-loginBox.style.display="none"
-app.style.display="block"
-init()
+  loginBox.style.display="none"
+  appDiv.style.display="block"
+  init()
 }
+
 
 // INIT BOTTONI
 async function init(){
