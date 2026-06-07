@@ -262,7 +262,9 @@ width:100%;
 <input id="pass" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
+<button onclick="resetPassword()">Forgot password?</button>  
 <button onclick="register()">Crea account</button>
+<button onclick="resetPassword()">Forgot password?</button>  
 </div>
 
 <!-- APP -->
@@ -438,6 +440,24 @@ localStorage.setItem("lastUser",user.value)
 userCorrente=user.value
 start()
 }else alert("Credenziali errate")
+}
+
+function resetPassword(){
+
+  let saved = localStorage.getItem("u_" + user.value)
+
+  if(!saved){
+    alert("Utente non trovato")
+    return
+  }
+
+  let nuova = prompt("Inserisci nuova password")
+
+  if(!nuova) return
+
+  localStorage.setItem("u_" + user.value, btoa(nuova))
+
+  alert("Password aggiornata ✅")
 }
 
 function logout(){
