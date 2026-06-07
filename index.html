@@ -576,22 +576,6 @@ country.onchange = function(){
 }
 
 
-  // filtra campi per paese
-  const filtrati = campi
-    .filter(c => c.country === selected)
-    .sort((a,b) => a.nome.localeCompare(b.nome))
-
-  filtrati.forEach(c => {
-    let o = document.createElement("option")
-    o.value = c.nome
-    o.textContent = c.nome
-    campo.appendChild(o)
-  })
-
-  campo.disabled = false
-}
-
-
 // INFO CAMPO
 campo.onchange=updateInfo
 tee.onchange=updateInfo
@@ -901,6 +885,33 @@ function aggiungiCampo() {
   loadCampi();
   toggleForm();
 }
+
+
+function eliminaCampo(){
+
+  if(country.value !== "CUSTOM" || !campo.value){
+    return
+  }
+
+  const nome = campo.value
+
+  const conferma = confirm("Vuoi eliminare il campo:\n" + nome + " ?")
+
+  if(!conferma) return
+
+  let campiCustom = JSON.parse(localStorage.getItem("campiCustom")) || []
+
+  campiCustom = campiCustom.filter(c => c.nome !== nome)
+
+  localStorage.setItem("campiCustom", JSON.stringify(campiCustom))
+
+  alert("Campo eliminato ✅")
+
+  campo.value = ""
+  loadCampi()
+}
+
+  
 document.getElementById("deleteCourseBtn").onclick = eliminaCampo
   
 </script>
