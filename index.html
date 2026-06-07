@@ -448,11 +448,14 @@ splash.style.display="none"
 // ✅ AUTOLOGIN
 window.addEventListener("DOMContentLoaded",()=>{
 
-  onAuthStateChanged(auth, (user) => {
-    if(user){
-      start()
-    }
-  })
+  
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    userCorrente = user.email   // ✅ AGGIUNGI QUESTO
+    start()
+  }
+})
+
 
 })
 
