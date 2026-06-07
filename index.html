@@ -471,6 +471,12 @@ function login(){
     .catch(err => alert(err.message))
 }
 
+function resetPassword(){
+  sendPasswordResetEmail(auth, user.value)
+    .then(() => alert("Email inviata ✅"))
+    .catch(err => alert(err.message))
+}
+
 
 function logout(){
 localStorage.removeItem("lastUser")
