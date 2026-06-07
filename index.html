@@ -440,13 +440,7 @@ function toggleForm(){
   f.style.display = f.style.display === "none" ? "block" : "none";
 }
 
-
-function toggleForm(){
-  let f = document.getElementById("formCampo");
-  f.style.display = f.style.display === "none" ? "block" : "none";
-}
-
-  
+ 
 // SPLASH
 
 setTimeout(()=>{
@@ -472,10 +466,11 @@ loginBox = document.getElementById("loginBox")
     if(user){
       userCorrente = user.email
       start()
-    } else {
-      document.getElementById("loginBox").style.display = "block"
-    }
-  })
+    } 
+else {
+  loginBox.style.display = "block"
+}
+
 
 })
 
