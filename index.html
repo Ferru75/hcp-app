@@ -329,12 +329,6 @@ Select from menu Country, Course and Tee
 <!-- ✅ INFO CAMPO -->
 <div id="infoCampo" style="margin-top:8px; font-size:13px; color:#555;"></div>
 
-<!-- ✅ BOTTONE ELIMINA -->
-<button id="deleteCourseBtn" style="display:none; background:#e53935;">
-  🗑 Elimina campo
-</button>
-
-
 </div>
 
 <!-- ✅ LISTA CUSTOM -->
@@ -614,7 +608,6 @@ name.onclick = () => {
       renderCustomList()
 
       document.getElementById("infoCampo").innerHTML = ""
-      document.getElementById("deleteCourseBtn").style.display = "none"
     }
 
     row.appendChild(name)
@@ -660,26 +653,18 @@ filtrati.forEach(c => {
 campo.onchange = updateInfo
 tee.onchange = updateInfo
 
+
 function updateInfo(){
 
   let c = campi.find(x => x.nome === campo.value)
-
-  if(!c){
-    document.getElementById("deleteCourseBtn").style.display = "none"
-    return
-  }
+  if(!c) return
 
   let d = c.tee[tee.value] || c.tee.giallo
 
   document.getElementById("infoCampo").innerHTML =
     "CR " + d.cr + " | Slope " + d.slope
-
-  if(c.country === "CUSTOM"){
-    document.getElementById("deleteCourseBtn").style.display = "block"
-  } else {
-    document.getElementById("deleteCourseBtn").style.display = "none"
-  }
 }
+
 
 
 // SD
@@ -960,43 +945,7 @@ toggleForm();
 renderCustomList();
 }
 
-
-
-
-function eliminaCampo(){
-
-  // ✅ sicurezza extra: deve essere proprio CUSTOM
-  if(country.value !== "CUSTOM") return
-
-  // ✅ sicurezza extra: campo deve esistere davvero
-  const nome = campo.value
-  if(!nome) return
-
-  // ✅ IMPORTANTISSIMO: deve esistere nella lista custom
-  let campiCustom = JSON.parse(localStorage.getItem("campiCustom")) || []
-
-  const exists = campiCustom.some(c => c.nome === nome)
-  if(!exists) return  // 🔥 blocca eliminazioni strane
-
-  const conferma = confirm("Vuoi eliminare il campo:\n" + nome + " ?")
-  if(!conferma) return
-
-  campiCustom = campiCustom.filter(c => c.nome !== nome)
-
-  localStorage.setItem("campiCustom", JSON.stringify(campiCustom))
-
-  alert("Campo eliminato ✅")
-
-  campo.value = ""
-  document.getElementById("infoCampo").innerHTML = ""
-  document.getElementById("deleteCourseBtn").style.display = "none"
-
-  loadCampi()
-  renderCustomList()
-}
-
-
-  
+ 
 document.getElementById("deleteCourseBtn").onclick = eliminaCampo
   
 </script>
