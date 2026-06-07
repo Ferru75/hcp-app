@@ -263,6 +263,7 @@ width:100%;
 
 <button onclick="login()">Login</button>
 <button onclick="register()">Crea account</button>
+<button onclick="resetPassword()">Forgot password?</button>
 </div>
 
 <!-- APP -->
@@ -449,20 +450,27 @@ start()
 })
 
 // LOGIN
+
 function register(){
-localStorage.setItem("u_"+user.value,btoa(pass.value))
-localStorage.setItem("lastUser",user.value)
-userCorrente=user.value
-start()
+  createUserWithEmailAndPassword(auth, user.value, pass.value)
+    .then(() => {
+      alert("Account creato ✅")
+      start()
+    })
+    .catch(err => alert(err.message))
 }
 
+
+
 function login(){
-if(localStorage.getItem("u_"+user.value)===btoa(pass.value)){
-localStorage.setItem("lastUser",user.value)
-userCorrente=user.value
-start()
-}else alert("Credenziali errate")
+  signInWithEmailAndPassword(auth, user.value, pass.value)
+    .then(() => {
+      alert("Login OK ✅")
+      start()
+    })
+    .catch(err => alert(err.message))
 }
+
 
 function logout(){
 localStorage.removeItem("lastUser")
@@ -966,6 +974,10 @@ loadCampi();
 toggleForm();
 renderCustomList();
 }
+
+window.register = register
+window.login = login
+window.resetPassword = resetPassword
 
  
   
