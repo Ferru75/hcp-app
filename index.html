@@ -581,16 +581,32 @@ country.onchange = function(){
 }
 
 
+
 // INFO CAMPO
-campo.onchange=updateInfo
-tee.onchange=updateInfo
+campo.onchange = updateInfo
+tee.onchange = updateInfo
 
 function updateInfo(){
-let c=campi.find(x=>x.nome===campo.value)
-if(!c)return
-let d=c.tee[tee.value]||c.tee.giallo
-infoCampo.innerHTML="CR "+d.cr+" | Slope "+d.slope
+
+  let c = campi.find(x => x.nome === campo.value)
+
+  if(!c){
+    document.getElementById("deleteCourseBtn").style.display = "none"
+    return
+  }
+
+  let d = c.tee[tee.value] || c.tee.giallo
+
+  document.getElementById("infoCampo").innerHTML =
+    "CR " + d.cr + " | Slope " + d.slope
+
+  if(c.country === "CUSTOM"){
+    document.getElementById("deleteCourseBtn").style.display = "block"
+  } else {
+    document.getElementById("deleteCourseBtn").style.display = "none"
+  }
 }
+
 
 // SD
 function changeSD(i,d){
