@@ -432,17 +432,6 @@ let data=new Array(20).fill(null)
 
 let stbValue=36
 
-const loginBox = document.getElementById("loginBox")
-const appDiv = document.getElementById("app")
-const grid = document.getElementById("grid")
-const country = document.getElementById("country")
-const campo = document.getElementById("campo")
-const tee = document.getElementById("tee")
-const hcp = document.getElementById("hcp")
-const grafico = document.getElementById("grafico")
-const sim = document.getElementById("sim")
-
-
 function toggleForm(){
   let f = document.getElementById("formCampo");
   f.style.display = f.style.display === "none" ? "block" : "none";
@@ -459,6 +448,16 @@ setTimeout(()=>{
 
 
 window.addEventListener("DOMContentLoaded",()=>{
+
+loginBox = document.getElementById("loginBox")
+  appDiv = document.getElementById("app")
+  grid = document.getElementById("grid")
+  country = document.getElementById("country")
+  campo = document.getElementById("campo")
+  tee = document.getElementById("tee")
+  hcp = document.getElementById("hcp")
+  grafico = document.getElementById("grafico")
+  sim = document.getElementById("sim")
 
   onAuthStateChanged(auth, (user) => {
     if(user){
