@@ -558,9 +558,12 @@ function renderCustomList(){
     return
   }
 
-  box.innerHTML = ""
+  
+box.innerHTML = ""
 
-  campiCustom.forEach(c => {
+campiCustom
+  .filter(c => c.nome === campo.value)
+  .forEach(c => {
 
     let row = document.createElement("div")
     row.style.display = "flex"
@@ -575,24 +578,15 @@ function renderCustomList(){
     name.textContent = c.nome
     name.style.cursor = "pointer"
 
-    
-name.onclick = () => {
-
-  // ✅ imposta country (sicurezza)
-  country.value = "CUSTOM"
-
-  // ✅ seleziona campo nel select
-  campo.value = c.nome
-
-  // ✅ forza update pulito
-  campo.dispatchEvent(new Event("change"))
-}
-
+    name.onclick = () => {
+      country.value = "CUSTOM"
+      campo.value = c.nome
+      campo.dispatchEvent(new Event("change"))
+    }
 
     let del = document.createElement("div")
     del.textContent = "🗑️"
     del.style.cursor = "pointer"
-    del.style.fontSize = "18px"
 
     del.onclick = (e) => {
       e.stopPropagation()
@@ -614,7 +608,7 @@ name.onclick = () => {
     row.appendChild(del)
     box.appendChild(row)
   })
-}
+
 
 
 country.onchange = function(){
