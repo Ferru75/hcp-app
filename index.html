@@ -905,8 +905,13 @@ function eliminaCampo(){
 
   alert("Campo eliminato ✅")
 
-  campo.value = ""
-  loadCampi()
+ 
+campo.value = ""
+document.getElementById("infoCampo").innerHTML = ""
+document.getElementById("deleteCourseBtn").style.display = "none"
+
+loadCampi()
+
 }
 
   
