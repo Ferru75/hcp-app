@@ -581,10 +581,19 @@ function renderCustomList(){
     name.textContent = c.nome
     name.style.cursor = "pointer"
 
-    name.onclick = () => {
-      campo.value = c.nome
-      updateInfo()
-    }
+    
+name.onclick = () => {
+
+  // ✅ imposta country (sicurezza)
+  country.value = "CUSTOM"
+
+  // ✅ seleziona campo nel select
+  campo.value = c.nome
+
+  // ✅ forza update pulito
+  campo.dispatchEvent(new Event("change"))
+}
+
 
     let del = document.createElement("div")
     del.textContent = "🗑️"
