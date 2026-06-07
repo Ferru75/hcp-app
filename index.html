@@ -520,11 +520,18 @@ function logout(){
 
 // START
 
+
+let initialized = false;
+
 function start(){
+  if(initialized) return;
+  initialized = true;
+
   loginBox.style.display="none"
   appDiv.style.display="block"
   init()
 }
+
 
 
 // INIT BOTTONI
