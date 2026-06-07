@@ -462,15 +462,21 @@ loginBox = document.getElementById("loginBox")
   grafico = document.getElementById("grafico")
   sim = document.getElementById("sim")
 
-  onAuthStateChanged(auth, (user) => {
-    if(user){
-      userCorrente = user.email
-      start()
-    } 
-else {
-  loginBox.style.display = "block"
-}
+  
+onAuthStateChanged(auth, (user) => {
+
+  if(user){
+    userCorrente = user.email
+    loginBox.style.display = "none"
+    appDiv.style.display = "block"
+    start()
+  } else {
+    appDiv.style.display = "none"
+    loginBox.style.display = "block"
+  }
+
 })
+
   
 })
 
@@ -506,10 +512,9 @@ function resetPassword(){
     .catch(err => alert(err.message))
 }
 
+
 function logout(){
-  signOut(auth).then(() => {
-    location.reload()
-  })
+  signOut(auth)
 }
 
 
