@@ -628,8 +628,8 @@ country.onchange = function(){
 
   const selected = this.value
 
-  campo.innerHTML = ''
-
+campo.innerHTML = ''
+campo.value = ""
   if(!selected){
     campo.disabled = true
     return
