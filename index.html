@@ -962,19 +962,24 @@ renderCustomList();
 
 
 
+
 function eliminaCampo(){
 
-  if(country.value !== "CUSTOM" || !campo.value){
-    return
-  }
+  // ✅ sicurezza extra: deve essere proprio CUSTOM
+  if(country.value !== "CUSTOM") return
 
+  // ✅ sicurezza extra: campo deve esistere davvero
   const nome = campo.value
+  if(!nome) return
+
+  // ✅ IMPORTANTISSIMO: deve esistere nella lista custom
+  let campiCustom = JSON.parse(localStorage.getItem("campiCustom")) || []
+
+  const exists = campiCustom.some(c => c.nome === nome)
+  if(!exists) return  // 🔥 blocca eliminazioni strane
 
   const conferma = confirm("Vuoi eliminare il campo:\n" + nome + " ?")
-
   if(!conferma) return
-
-  let campiCustom = JSON.parse(localStorage.getItem("campiCustom")) || []
 
   campiCustom = campiCustom.filter(c => c.nome !== nome)
 
@@ -982,14 +987,14 @@ function eliminaCampo(){
 
   alert("Campo eliminato ✅")
 
- 
-campo.value = ""
-document.getElementById("infoCampo").innerHTML = ""
-document.getElementById("deleteCourseBtn").style.display = "none"
+  campo.value = ""
+  document.getElementById("infoCampo").innerHTML = ""
+  document.getElementById("deleteCourseBtn").style.display = "none"
 
-loadCampi()
-
+  loadCampi()
+  renderCustomList()
 }
+
 
   
 document.getElementById("deleteCourseBtn").onclick = eliminaCampo
