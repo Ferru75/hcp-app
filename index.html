@@ -535,16 +535,39 @@ async function loadCampi(){
 }
 
 
+
 country.onchange = function(){
 
   const selected = this.value
 
-  campo.innerHTML = '<option value="">Campo</option>'
+  campo.innerHTML = ''
 
   if(!selected){
     campo.disabled = true
     return
   }
+
+  const filtrati = campi
+    .filter(c => c.country === selected)
+    .sort((a,b) => a.nome.localeCompare(b.nome))
+
+  filtrati.forEach(c => {
+
+    let o = document.createElement("option")
+    o.value = c.nome
+
+    if(selected === "CUSTOM"){
+      o.textContent = "🗑️ " + c.nome
+    } else {
+      o.textContent = c.nome
+    }
+
+    campo.appendChild(o)
+  })
+
+  campo.disabled = false
+}
+
 
   // filtra campi per paese
   const filtrati = campi
