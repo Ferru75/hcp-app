@@ -547,9 +547,73 @@ async function loadCampi(){
   campo.disabled = true
 }
 
+
 function renderCustomList(){
-  // codice funzione
+
+  const box = document.getElementById("customList")
+
+  if(country.value !== "CUSTOM"){
+    box.innerHTML = ""
+    return
+  }
+
+  let campiCustom = JSON.parse(localStorage.getItem("campiCustom")) || []
+
+  if(campiCustom.length === 0){
+    box.innerHTML = "<div style='font-size:12px;color:#777;text-align:center;'>No custom courses</div>"
+    return
+  }
+
+  box.innerHTML = ""
+
+  campiCustom.forEach(c => {
+
+    let row = document.createElement("div")
+    row.style.display = "flex"
+    row.style.justifyContent = "space-between"
+    row.style.alignItems = "center"
+    row.style.padding = "10px"
+    row.style.borderRadius = "8px"
+    row.style.background = "#f9f9f9"
+    row.style.marginBottom = "6px"
+
+    let name = document.createElement("div")
+    name.textContent = c.nome
+    name.style.cursor = "pointer"
+
+    name.onclick = () => {
+      campo.value = c.nome
+      updateInfo()
+    }
+
+    let del = document.createElement("div")
+    del.textContent = "🗑️"
+    del.style.cursor = "pointer"
+    del.style.fontSize = "18px"
+
+    del.onclick = (e) => {
+      e.stopPropagation()
+
+      const conferma = confirm("Eliminare " + c.nome + " ?")
+      if(!conferma) return
+
+      let list = JSON.parse(localStorage.getItem("campiCustom")) || []
+      list = list.filter(x => x.nome !== c.nome)
+      localStorage.setItem("campiCustom", JSON.stringify(list))
+
+      loadCampi()
+      renderCustomList()
+
+      document.getElementById("infoCampo").innerHTML = ""
+      document.getElementById("deleteCourseBtn").style.display = "none"
+    }
+
+    row.appendChild(name)
+    row.appendChild(del)
+    box.appendChild(row)
+  })
 }
+
 
 country.onchange = function(){
 
