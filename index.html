@@ -524,11 +524,16 @@ function logout(){
 let initialized = false;
 
 
-function start(){
+
+async function start(){
   loginBox.style.display="none"
   appDiv.style.display="block"
-  init()
+
+  if(!grid.hasChildNodes()){
+    await init()
+  }
 }
+
 
 
 
