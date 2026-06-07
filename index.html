@@ -644,8 +644,12 @@ filtrati.forEach(c => {
 
 
 // INFO CAMPO
-campo.onchange = updateInfo
-tee.onchange = updateInfo
+
+campo.onchange = () => {
+  updateInfo()
+  renderCustomList()   // ✅ AGGIUNTA IMPORTANTISSIMA
+}
+
 
 
 function updateInfo(){
