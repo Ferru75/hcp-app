@@ -484,14 +484,19 @@ location.reload()
 }
 
 // START
-function start(){
-  
 
-  // ✅ mostra solo la prima volta
+function start(){
+
   if(!localStorage.getItem("privacyShown")){
     alert("Data saved only on this device")
     localStorage.setItem("privacyShown", "1")
   }
+
+  loginBox.style.display="none"
+  app.style.display="block"
+  init()
+}
+
 
   loginBox.style.display="none"
   app.style.display="block"
