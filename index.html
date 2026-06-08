@@ -270,6 +270,24 @@ width:100%;
 <!-- APP -->
 <div id="app">
 
+<div id="readmePage" style="display:none;">
+
+  <div class="container">
+    <h2 style="text-align:center;">📘 Istruzioni</h2>
+
+    <p>
+      • Inserisci i tuoi ultimi 20 Score Differentials<br><br>
+      • I migliori 8 verranno evidenziati<br><br>
+      • L’handicap viene calcolato automaticamente<br><br>
+      • Usa la simulazione per vedere l’impatto di un giro<br><br>
+      • Puoi salvare campi personalizzati<br>
+    </p>
+
+    <button onclick="closeReadMe()">🏠 Home</button>
+  </div>
+
+</div>
+
 
 <div class="container headerBox" style="position:relative">
 
@@ -277,7 +295,7 @@ width:100%;
  <img src="logo-horizontal.png">
 </div>
 
-
+<button class="logoutBtn" style="right:90px;" onclick="openReadMe()">Read Me</button>
 <button class="logoutBtn" onclick="logout()">Logout</button>
 
 <p class="titleHint titleHintTop">
